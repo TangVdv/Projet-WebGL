@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>On s'amuse en 3D</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
+	</head>
+	<body>
+
+		<script type="module">
+
+			import * as THREE from '../three.js-master/build/three.module.js';
+
+			let camera, scene, renderer;
+			let model;
+
+			init();
+			animate();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.z = 400;
+
+				scene = new THREE.Scene();
+
+				//Texture
+				const texture = new THREE.TextureLoader().load( 'textures/stone.jpg' );
+
+				//Geometry
+				const geometry = new THREE.BoxGeometry( 100, 200, 50 );
+
+				//Material
+				const material = new THREE.MeshBasicMaterial( { map: texture } );
+
+				let posx_arch = 0;
+				for (let i = 0; i < 10; i++) {
+					arch(posx_arch);
+					posx_arch += 400;
+				}
+				posx_arch = 0;
+				for (let i = 0; i < 10; i++) {
+					arch(posx_arch);
+					posx_arch -= 400;
+				}
+
+				function arch(x){
+					let posx_1 = 0;
+					let posx_2 = 100;
+					for (let i = 0; i < 2; i++) {
+						//Create mesh
+						model = new THREE.Mesh( geometry, material );
+						model.position.x = posx_1 + x;
+						//Add mesh
+						scene.add( model );
+						posx_1 += 175;
+
+						model = new THREE.Mesh( new THREE.BoxGeometry( 200, 50, 100 ), material );
+						model.position.x = posx_2 + x;
+						model.position.y = 125;
+						scene.add( model );
+						posx_2 += 200;
+					}
+				}
+
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				//scene.rotation.x += 0.005;
+				scene.rotation.y += 0.01;
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>
