@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 	<head>
-		<title>On s'amuse en 3D</title>
+		<title>Stonehenge</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
@@ -13,57 +13,75 @@
 			import * as THREE from '../three.js-master/build/three.module.js';
 
 			let camera, scene, renderer;
-			let model;
+			let model, central_cube;
+			let group;
 
 			init();
 			animate();
 
 			function init() {
 
-				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 2000 );
-				camera.position.z = 400;
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 2000;
+				camera.position.y = 700;
+				camera.rotation.x = -20 * Math.PI / 180;
 
 				scene = new THREE.Scene();
 
 				//Texture
-				const texture = new THREE.TextureLoader().load( 'textures/stone.jpg' );
+				const rockTexture = new THREE.TextureLoader().load( 'textures/stone.jpg' );
+				//const grassTexture = new THREE.TextureLoader().load( 'textures/grass.jpg' );
 
 				//Geometry
 				const geometry = new THREE.BoxGeometry( 100, 200, 50 );
 
 				//Material
-				const material = new THREE.MeshBasicMaterial( { map: texture } );
+				const material = new THREE.MeshBasicMaterial( { map: rockTexture } );
+				//const floorMat = new THREE.MeshBasicMaterial( { map: grassTexture } );
 
-				let posx_arch = 0;
-				for (let i = 0; i < 10; i++) {
-					arch(posx_arch);
-					posx_arch += 400;
-				}
-				posx_arch = 0;
-				for (let i = 0; i < 10; i++) {
-					arch(posx_arch);
-					posx_arch -= 400;
-				}
+				const floorGeometry = new THREE.PlaneGeometry( 10000, 10000 );
+				/*
+				const floorMesh = new THREE.Mesh( floorGeometry, floorMat );
+				floorMesh.rotation.x = -90 * Math.PI / 180;
+				floorMesh.position.y = -100;
+				scene.add( floorMesh );
+				*/
 
-				function arch(x){
-					let posx_1 = 0;
-					let posx_2 = 100;
-					for (let i = 0; i < 2; i++) {
-						//Create mesh
-						model = new THREE.Mesh( geometry, material );
-						model.position.x = posx_1 + x;
-						//Add mesh
-						scene.add( model );
-						posx_1 += 175;
-
-						model = new THREE.Mesh( new THREE.BoxGeometry( 200, 50, 100 ), material );
-						model.position.x = posx_2 + x;
-						model.position.y = 125;
-						scene.add( model );
-						posx_2 += 200;
-					}
+				let rotation_arch = 0;
+				for (let i = 0; i < 30; i++) {
+					pillar(1000, rotation_arch);
+					rotation_arch += 12;
 				}
 
+				//Create a pillar
+				function pillar(location, rotation){
+					//  / pillar part \
+
+					group = new THREE.Group();
+					//Create mesh
+					model = new THREE.Mesh( geometry, material );
+					//Set position to mesh
+					model.position.z = location;
+					//Add mesh in group
+					group.add( model );
+
+					//  / roof part \
+
+					//Create mesh
+					model = new THREE.Mesh( new THREE.BoxGeometry( location / 5, 50, 100 ), material );
+					//Set position to mesh
+					model.position.x = location / 10;
+					model.position.z = location;
+					model.position.y = 125;
+					model.rotation.y = 5 * Math.PI / 180;
+					//Add mesh in group
+					group.add(model);
+
+					//Set rotation to group
+					group.rotation.y = rotation * Math.PI / 180;
+					//add group to scene
+					scene.add(group);
+				}
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -90,7 +108,7 @@
 				requestAnimationFrame( animate );
 
 				//scene.rotation.x += 0.005;
-				scene.rotation.y += 0.01;
+				//scene.rotation.y += 0.01;
 
 				renderer.render( scene, camera );
 
