@@ -20,45 +20,57 @@
 			animate();
 
 			function init() {
-				var positionStonehenge = 1000;
+				var sizeStonehenge = 1000;
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
-				camera.position.z = 1300;
-				camera.position.y = 900;
-				camera.rotation.x = -45 * Math.PI / 180;
+				camera.position.z = sizeStonehenge * 1.5;
+				camera.position.y = sizeStonehenge / 2;
+				camera.rotation.x = -25 * Math.PI / 180;
 
 				scene = new THREE.Scene();
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+
+				// GROUND
 
 				//Texture
-				const rockTexture = new THREE.TextureLoader().load( 'textures/stone.jpg' );
-				//const grassTexture = new THREE.TextureLoader().load( 'textures/grass.jpg' );
+				const grassTexture = new THREE.TextureLoader().load( 'textures2/terrain/grasslight-big.jpg' );
+				//Material
+				const floorMat = new THREE.MeshBasicMaterial( { map: grassTexture } );
+
+				grassTexture.wrapS = THREE.RepeatWrapping; // Texture is wrapped horizontally
+				grassTexture.wrapT = THREE.RepeatWrapping; // Texture is wrapped vertically
+				grassTexture.repeat.set( 258, 258 ); // Number of times the texture is repeated
 
 				//Geometry
-				const geometry = new THREE.BoxGeometry( 100, 200, 50 );
-
-				//Material
-				const material = new THREE.MeshBasicMaterial( { map: rockTexture } );
-				//const floorMat = new THREE.MeshBasicMaterial( { map: grassTexture } );
-
-				const floorGeometry = new THREE.PlaneGeometry( 10000, 10000 );
-				/*
+				const floorGeometry = new THREE.PlaneGeometry( 100, 100 );
+				//Mesh
 				const floorMesh = new THREE.Mesh( floorGeometry, floorMat );
 				floorMesh.rotation.x = -90 * Math.PI / 180;
 				floorMesh.position.y = -100;
+				floorMesh.scale.set(1000, 1000, 1000);
 				scene.add( floorMesh );
-				*/
+
+
+				// STONEHENGE
+
+				//Texture
+				const rockTexture = new THREE.TextureLoader().load( 'textures/stone.jpg' );
+				//Material
+				const material = new THREE.MeshBasicMaterial( { map: rockTexture } );
+				//Geometry
+				const geometry = new THREE.BoxGeometry( 100, 200, 50 );
 
 				let rotation_arch = 0;
 				for (let i = 0; i < 30; i++) {
-					pillar(positionStonehenge, rotation_arch);
-					b(positionStonehenge/1.25, rotation_arch);
+					pillar(sizeStonehenge, rotation_arch);
+					b(sizeStonehenge/1.25, rotation_arch);
 					rotation_arch += 12;
 				}
 
 				let rotation_a = 0;
 				for (let i = 0; i < 6; i++) {
-					a(positionStonehenge/2, rotation_a);
-					c(positionStonehenge/2.5, rotation_a);
+					a(sizeStonehenge/2, rotation_a);
+					c(sizeStonehenge/2.5, rotation_a);
 					rotation_a += 60;
 				}
 
@@ -154,17 +166,12 @@
 					}
 				}
 
+				// RENDER
 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				document.body.appendChild( renderer.domElement );
-
-				scene.background = new THREE.Color( 0xa0a0a0 );
-
-				const light = new THREE.HemisphereLight( 0xffffff, 0x444444 );
-				light.position.set( 0, 20, 0 );
-				scene.add( light );
+				scene.background = new THREE.Color( 0x77b5fe );
 
 				//
 
@@ -185,8 +192,7 @@
 
 				requestAnimationFrame( animate );
 
-				//scene.rotation.x += 0.005;
-				//scene.rotation.y += 0.01;
+				scene.rotation.y += 0.001;
 
 				renderer.render( scene, camera );
 
