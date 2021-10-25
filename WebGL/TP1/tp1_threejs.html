@@ -19,7 +19,13 @@
 			init();
 			animate();
 
+			const music = new Audio('Music/music.mp3');
+					setTimeout(function playMusic(){
+							music.play();
+					}, 3000);
+
 			function init() {
+
 				let multiplier = 1;
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.z = 1500 * multiplier;
@@ -48,7 +54,6 @@
 				floorMesh.position.y = -100;
 				floorMesh.scale.set(1000, 1000, 1000);
 				scene.add( floorMesh );
-
 
 				// STONEHENGE
 
