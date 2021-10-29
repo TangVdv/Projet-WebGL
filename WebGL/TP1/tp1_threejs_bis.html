@@ -52,6 +52,10 @@
 				controls.enablePan = false;
 
 				// LIGHTS
+
+				const ambient = new THREE.AmbientLight( 0xffffff, 1 );
+				scene.add( ambient );
+
 				spotLight = new THREE.SpotLight( 0xffffff, 1 );
 				spotLight.position.set( 1000, 1000, 1000 );
 				spotLight.rotation.set(100, 100, 100);
@@ -74,156 +78,26 @@
 				shadowCameraHelper = new THREE.CameraHelper( spotLight.shadow.camera );
 				scene.add( shadowCameraHelper );
 
+				// CUBE
+
+				const geometry = new THREE.BoxGeometry( 500, 500, 500 );
+				const material = new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } );
+
+				model = new THREE.Mesh( geometry, material );
+				model.position.y = 250;
+				model.castShadow = true;
+				scene.add( model );
 
 				// GROUND
-
-				//Texture scale
-				/*
-				grassTexture.wrapS = THREE.RepeatWrapping; // Texture is wrapped horizontally
-				grassTexture.wrapT = THREE.RepeatWrapping; // Texture is wrapped vertically
-				grassTexture.repeat.set( 516, 516 ); // Number of times the texture is repeated
-				*/
 
 				const floorMat = new THREE.MeshPhongMaterial( { color: 0x333333, dithering: true } );
 				const floorGeometry = new THREE.PlaneGeometry( 20000, 20000 );
 
 				const floorMesh = new THREE.Mesh( floorGeometry, floorMat );
-				floorMesh.position.set( 0, -100, 0 );
+				floorMesh.position.set( 0, - 1, 0 );
 				floorMesh.rotation.x = - Math.PI * 0.5;
 				floorMesh.receiveShadow  = true;
 				scene.add( floorMesh );
-
-
-				// STONEHENGE
-
-				//Geometry
-				const geometry = new THREE.BoxGeometry( 100, 200, 50 );
-
-				let rotation_arch = 0;
-				for (let i = 0; i < 30; i++) {
-					ext_pillar(1000 * multiplier, rotation_arch);
-					ext_cube(800 * multiplier, rotation_arch);
-					rotation_arch += 12;
-				}
-
-				let rotation_a = 0;
-				for (let i = 0; i < 6; i++) {
-					int_pillar(500 * multiplier, rotation_a);
-					int_cube(400 * multiplier, rotation_a);
-					rotation_a += 60;
-				}
-
-				function set_material(UV_x, UV_y){
-					//Texture
-					const rockTexture = new THREE.TextureLoader().load('textures/roche.jpg');
-
-					//Texture scale
-					rockTexture.wrapS = THREE.RepeatWrapping; // Texture is wrapped horizontally
-					rockTexture.wrapT = THREE.RepeatWrapping; // Texture is wrapped vertically
-					rockTexture.repeat.set( UV_x, UV_y ); // Number of times the texture is repeated
-
-					//Material
-					const material = new THREE.MeshPhongMaterial( { map: rockTexture } );
-					return material;
-				}
-
-				function ext_pillar(location, rotation){
-					//  / pillar part \
-
-					group = new THREE.Group();
-					//Create mesh
-					model = new THREE.Mesh( geometry, set_material(2, 4) );
-					//Set position to mesh
-					model.position.z = location;
-					//Add mesh in group
-					model.castShadow = true;
-					group.add( model );
-
-					//  / roof part \
-
-					//Create mesh
-					model = new THREE.Mesh( new THREE.BoxGeometry( location / 5, 50, 100 ), set_material(4 * multiplier,2) ); //Change la taille en x en rapport à la distance où il se trouve. Ici, on  divise par 5 car si on laissait la location de base, le toit serait 5 fois plus grand de base.
-					//Set position to mesh
-					model.position.x = location / 10;
-					model.position.z = location;
-					model.position.y = 125;
-					model.rotation.y = 5 * Math.PI / 180;
-
-					//Add mesh in group
-					group.add(model);
-
-					//Set rotation to group
-					group.rotation.y = rotation * Math.PI / 180;
-					model.castShadow = true;
-					//add group to scene
-					scene.add(group);
-				}
-
-				function int_pillar(location, rotation){
-					group = new THREE.Group();
-					let x= -100;
-					for (let i = 0; i < 2; i++) {
-						//Create mesh
-						model = new THREE.Mesh( new THREE.BoxGeometry( 100, 400, 70 ), set_material(2,8) );
-						//Set position to mesh
-						model.position.x = x;
-						model.position.z = location;
-						model.position.y = 100;
-						model.castShadow = true;
-						//Add mesh in group
-						group.add( model );
-						x += 200;
-					}
-
-					//  / roof part \
-
-					//Create mesh
-					model = new THREE.Mesh( new THREE.BoxGeometry( 320, 60, 80 ), set_material(5,2) );
-					//Set position to mesh
-					model.position.z = location;
-					model.position.y = 330;
-					model.castShadow = true;
-					//Add mesh in group
-					group.add(model);
-
-					//Set rotation to group
-					group.rotation.y = rotation * Math.PI / 180;
-					//add group to scene
-					scene.add(group);
-				}
-
-				function ext_cube(location, rotation){
-					group = new THREE.Group();
-					//Create mesh
-					model = new THREE.Mesh( new THREE.BoxGeometry( 50, 20, 20 ), set_material(1,1) );
-					//Set position to mesh
-					model.position.z = location;
-					model.position.y = -100;
-					model.castShadow = true;
-					//Add mesh in group
-					group.add( model );
-					group.rotation.y = rotation * Math.PI / 180;
-					scene.add(group);
-				}
-
-				function int_cube(location, rotation){
-					let x = -125;
-					for (var i = 0; i < 3; i++) {
-						group = new THREE.Group();
-						//Create mesh
-						model = new THREE.Mesh( new THREE.BoxGeometry( 50, 20, 20 ), set_material(1,1) );
-						//Set position to mesh
-						model.position.z = location;
-						model.position.y = -100;
-						model.position.x = x;
-						model.castShadow = true;
-						//Add mesh in group
-						group.add( model );
-						group.rotation.y = rotation * Math.PI / 180;
-						scene.add(group);
-						x += 125;
-					}
-				}
 
 
 				//
@@ -320,6 +194,10 @@
 			}
 
 			function render(){
+				lightHelper.update();
+
+				shadowCameraHelper.update();
+
 				renderer.render( scene, camera );
 			}
 
