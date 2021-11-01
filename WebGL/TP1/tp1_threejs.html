@@ -18,10 +18,11 @@
 
 			import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
 
-			let camera, scene, renderer, gui, guiC;
+			let camera, scene, renderer, gui;
 			let group;
 			let spotLight, lightHelper, shadowCameraHelper;
 			let multiplier = 1;
+			let far = 0;
 
 			let controls, controls_2;
 			const clock = new THREE.Clock();
@@ -169,6 +170,8 @@
 
 				scene = new THREE.Scene();
 
+				scene.fog = new THREE.FogExp2(0xaaccff, 0);
+
 				// RENDER
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -243,6 +246,7 @@
 					//'camera rotation': 'On',
 					'first person controls': 'Off',
 					'orbit controls': 'On',
+					'fog': 'Off',
 				};
 
 				gui.add( params, 'mult', 1, 2 ).onChange( function ( val ) {
@@ -276,6 +280,15 @@
 					}
 					if (params == 'Off') {
 						controls.enabled = false;
+					}
+				} );
+
+				gui.add( params, 'fog', [ 'Off', 'On' ] ).onChange( function ( params ) {
+					if (params == 'On') {
+						scene.fog = new THREE.FogExp2(0xaaccff, 0.0007);
+					}
+					if (params == 'Off') {
+						scene.fog = new THREE.FogExp2(0xaaccff, 0);
 					}
 				} );
 
