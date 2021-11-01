@@ -14,12 +14,17 @@
 
 			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
 
-			import { OrbitControls } from '../three.js-master/	examples/jsm/controls/OrbitControls.js';
+			import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
 
-			let camera, scene, renderer, gui;
+			import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
+
+			let camera, scene, renderer, gui, guiC;
 			let group;
 			let spotLight, lightHelper, shadowCameraHelper;
 			let multiplier = 1;
+
+			let controls, controls_2;
+			const clock = new THREE.Clock();
 
 			function stonehenge(){
 				while(parent.children.length > 0){
@@ -180,11 +185,18 @@
 
 				// CONTROL
 
-				const controls = new OrbitControls( camera, renderer.domElement );
+				controls = new OrbitControls( camera, renderer.domElement );
 				controls.addEventListener( 'change', renderer );
 				controls.minDistance = 1000;
 				controls.maxDistance = 2000;
 				controls.enablePan = false;
+
+				controls_2 = new FirstPersonControls(camera, renderer.domElement);
+            controls_2.movementSpeed = 5000;
+            controls_2.lookSpeed = 0.05;
+            controls_2.noFly = true;
+            controls_2.lookVertical = false;
+						controls_2.enabled = false;
 
 				// LIGHTS
 				const hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
@@ -228,6 +240,9 @@
 				const params = {
 					mult: multiplier,
 					'background color': scene.background.getHex(),
+					//'camera rotation': 'On',
+					'first person controls': 'Off',
+					'orbit controls': 'On',
 				};
 
 				gui.add( params, 'mult', 1, 2 ).onChange( function ( val ) {
@@ -235,6 +250,33 @@
 					multiplier = val;
 					stonehenge();
 
+				} );
+				// EXPERIMENTAL, ne marche pas pcq dans la fonction animate...
+				/*gui.add( params, 'camera rotation', [ 'On', 'Off' ] ).onChange( function ( params ) {
+					if (params == 'On') {
+						scene.rotation.y += 0.001;
+					}
+					if (params == 'Off') {
+						scene.rotation.y = 0;
+					}
+				} );*/
+
+				gui.add( params, 'first person controls', [ 'Off', 'On' ] ).onChange( function ( params ) {
+					if (params == 'On') {
+						controls_2.enabled = true;
+					}
+					if (params == 'Off') {
+						controls_2.enabled = false;
+					}
+				} );
+
+				gui.add( params, 'orbit controls', [ 'On', 'Off' ] ).onChange( function ( params ) {
+					if (params == 'On') {
+						controls.enabled = true;
+					}
+					if (params == 'Off') {
+						controls.enabled = false;
+					}
 				} );
 
 				gui.addColor( params, 'background color' ).onChange( function ( val ) {
@@ -263,7 +305,9 @@
 
 				requestAnimationFrame( animate );
 
-				scene.rotation.y += 0.001;
+				scene.rotation.y = 0;
+				// Enable 1st person, else crash
+				controls_2.update( clock.getDelta() );
 
 				render();
 
