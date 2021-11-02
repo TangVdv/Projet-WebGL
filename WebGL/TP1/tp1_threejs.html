@@ -7,12 +7,16 @@
 		<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
 	</head>
 	<body>
-
+		<div id='container'></div>
 		<script type="module">
 
 			import * as THREE from '../three.js-master/build/three.module.js';
 
 			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
+
+			import Stats from '../three.js-master/examples/jsm/libs/stats.module.js';
+
+			import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
 
 			import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
 
@@ -20,10 +24,14 @@
 
 
 			let pillar_ext, pillar_int, cube_ext, cube_int, group, geometry, multiplier = 1;	//Stonehenge
-			let scene, renderer, gui; // scene
+			let scene, renderer, gui, stats, gpuPanel; // scene
 			let light, hemiLight, fog = 0; // light
 			let camera, controls, controls_2; // camera
 			const clock = new THREE.Clock();
+
+			let mixer;
+
+			// STONEHENGE
 
 			function set_material(UV_x, UV_y){
 				//Texture
@@ -157,13 +165,22 @@
 
 			}
 
+			// INIT
+
+
+
 			function init() {
+
+				const container = document.getElementById( 'container' );
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.set( 0, 1500 * multiplier, 500 * multiplier );
 				camera.rotation.x = -25 * Math.PI / 180;
 
 				scene = new THREE.Scene();
+
+				// FOG
+
 				scene.fog = new THREE.FogExp2(0xaaccff, fog);
 
 				// RENDER
@@ -189,7 +206,7 @@
 				controls.enablePan = false;
 
 				controls_2 = new FirstPersonControls(camera, renderer.domElement);
-        controls_2.movementSpeed = 10000;
+        controls_2.movementSpeed = 1000;
         controls_2.lookSpeed = 0.05;
         controls_2.lookVertical = true;
 				controls_2.enabled = false;
@@ -212,7 +229,7 @@
 
 				// GROUND
 
-				const floorMat = new THREE.MeshPhongMaterial( { color: 0x333333, dithering: true } );
+				const floorMat = new THREE.MeshPhongMaterial( { color: 0x333333 } );
 				const floorGeometry = new THREE.BoxGeometry( 20000, 1, 20000 );
 
 				const floorMesh = new THREE.Mesh( floorGeometry, floorMat );
@@ -223,11 +240,38 @@
 				parent = new THREE.Object3D();
 				scene.add( parent );
 
+				// MODEL
+				const loader = new FBXLoader();
+				loader.load( 'models/fbx/tardis.fbx', function ( object ) {
+
+					object.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+							let scaleValue = 50;
+							child.scale.set(scaleValue,scaleValue,scaleValue);
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					scene.add( object );
+
+				} );
+
+				if (true) {
+
+				}
 				stonehenge();
 
-				//
-
 				window.addEventListener( 'resize', onWindowResize );
+
+				// STATS
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
 
 			}
 
@@ -282,11 +326,11 @@
 
 				const folderLight = gui.addFolder('Light');
 				folderLight.add( params, 'DensityPointLight', 0, 1 ).step( .001).onChange( function ( val ) {
-					hemiLight.intensity = val;
+					light.intensity = val;
 				} );
 
 				folderLight.add( params, 'DensityHemiLight', 0, 1 ).step( .001).onChange( function ( val ) {
-					light.intensity = val;
+					hemiLight.intensity = val;
 				} );
 
 
@@ -316,9 +360,11 @@
 
 				requestAnimationFrame( animate );
 
-				scene.rotation.y = 0;
 				// Enable 1st person, else crash
-				controls_2.update( clock.getDelta() );
+
+				const delta = clock.getDelta();
+
+				controls_2.update( delta );
 
 				render();
 
