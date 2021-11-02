@@ -14,6 +14,8 @@
 
 			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
 
+			import Stats  from '../three.js-master/xamples/jsm/libs/stats.module.js';
+
 			import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
 
 			import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
@@ -22,10 +24,14 @@
 			let pillar_ext, pillar_int, cube_ext, cube_int, group, geometry, multiplier = 1;	//Stonehenge
 			let scene, renderer, gui; // scene
 			let light, hemiLight, fog = 0; // light
-			let camera, controls, controls_2; // camera
+			let camera, controls, controls_2,stats; // camera
+			let mixer;
 			const clock = new THREE.Clock();
 
 			function set_material(UV_x, UV_y){
+
+				stats = new Stats();
+				body.appendChild(stats.dom);
 				//Texture
 				const rockTexture = new THREE.TextureLoader().load('textures/roche.jpg');
 
@@ -315,6 +321,7 @@
 			function animate() {
 
 				requestAnimationFrame( animate );
+				stats.update();
 
 				scene.rotation.y = 0;
 				// Enable 1st person, else crash
