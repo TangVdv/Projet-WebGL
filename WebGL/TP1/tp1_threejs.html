@@ -4,13 +4,19 @@
 		<title>Stonehenge</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link rel="stylesheet" href="bootstrap.min.css">
 		<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
 	</head>
 	<body>
-		<div id='container'></div>
+		<div id = "overlay" class="d-flex justify-content-center">
+			<button class="btn-success btn-lg" id = "startbutton">Start</button>
+		</div>
+<div id="container"></div>
 		<script type="module">
 
 			import * as THREE from '../three.js-master/build/three.module.js';
+
+			import Stats from '../three.js-master/examples/jsm/libs/stats.module.js';
 
 			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
 
@@ -22,20 +28,33 @@
 
 			import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
 
+			import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
 
 			let pillar_ext, pillar_int, cube_ext, cube_int, group, geometry, multiplier = 1;	//Stonehenge
 			let scene, renderer, gui, stats, gpuPanel; // scene
 			let light, hemiLight, fog = 0; // light
-			let camera, controls, controls_2; // camera
-			const clock = new THREE.Clock();
+      let Cgroup, Cparent, car;
+			let camera, controls, controls_2, stats; // camera
+			let runAction;
+			let loader;
 
-			let mixer;
+      let mixerHuman, mixerShrek;
+
+			const clock = new THREE.Clock();
 
 			let TardisGroup = new THREE.Group();
 
-			// STONEHENGE
+			let container = document.getElementById("container");
+			document.body.appendChild(container);
+			const start_button = document.getElementById('startbutton');
+			start_button.addEventListener('click', init);
+      
+      // STONEHENGE
 
 			function set_material(UV_x, UV_y){
+
+				stats = new Stats();
+				container.appendChild(stats.dom);
 				//Texture
 				const rockTexture = new THREE.TextureLoader().load('textures/roche.jpg');
 
@@ -166,6 +185,36 @@
 				}
 
 			}
+      
+      function CreateCar(){
+				while(Cparent.children.length > 0){
+				    Cparent.remove(Cparent.children[0]);
+				}
+
+				//Car's group
+				Cgroup = new THREE.Group();
+
+				// Car model
+				const Cloader = new FBXLoader();
+				Cloader.load( 'models/trueno_panda_ae86.fbx', function ( car ) {
+					car.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+        } );
+
+					Cgroup.add(car);
+					car.rotation.z = 125;
+					car.position.x = 1700 * multiplier;
+					Cparent.add(Cgroup);
+					scene.add( Cparent );
+
+				} );
+			}
 
 			function tardis(){
 
@@ -177,28 +226,78 @@
 						if ( child.isMesh ) {
 							let scaleValue = 50;
 							child.scale.set(scaleValue,scaleValue,scaleValue);
-
-							child.castShadow = true;
-							child.receiveShadow = true;
-
-						}
-
-						tardis.position.y = 500;
-						TardisGroup.add(tardis);
+              tardis.position.y = 500;
+              
 
 					} );
-
+          TardisGroup.add(tardis);
 					scene.add( TardisGroup );
 
 				} );
 
 			}
 
-			// INIT
+			function CreateRunHuman(){
+				loader = new FBXLoader();
+				loader.load("models/Standard-Run.fbx", function (Human) {
+					mixerHuman = new THREE.AnimationMixer(Human);
+
+					Human.position.y -= 100;
+					Human.position.z = 300;
+
+
+					const actionHuman = mixerHuman.clipAction(Human.animations[0]);
+					actionHuman.play();
+
+					Human.traverse(function (child) {
+
+						if (child.Mesh) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					});
+					scene.add(Human);
+				});
+
+
+			}
+
+			function CreateShrek(){
+				loader = new FBXLoader();
+				loader.load("models/shrek.fbx", function (Shrek) {
+					mixerShrek = new THREE.AnimationMixer(Shrek);
+
+					Shrek.scale.set(10, 10, 10);
+					Shrek.position.y = -100;
+
+					const actionShrek = mixerShrek.clipAction(Shrek.animations[0]);
+					actionShrek.play();
+
+					Shrek.traverse(function (child) {
+						if (child.isMesh) {
+								child.castShadow = true;
+								child.receiveShadow = true;
+
+						}
+					});
+					scene.add(Shrek);
+
+				});
+
+			}
+
+
+
 
 			function init() {
 
-				const container = document.getElementById( 'container' );
+				const overlay = document.getElementById('overlay');
+				overlay.remove();
+
+				//model
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.set( 0, 1500 * multiplier, 500 * multiplier );
@@ -267,15 +366,22 @@
 				parent = new THREE.Object3D();
 				scene.add( parent );
 
-				if (true) {
-
-				}
 				stonehenge();
 				tardis();
 
+				//Car's group
+				Cparent = new THREE.Group();
+				CreateCar();
+
+				render();
+				animate();
+        buildGui();
+				CreateShrek();
+				CreateRunHuman();
+
 				window.addEventListener( 'resize', onWindowResize );
 
-				// STATS
+				// stats
 				stats = new Stats();
 				container.appendChild( stats.dom );
 			}
@@ -299,6 +405,7 @@
 				folderStonehenge.add( params, 'multiplier', 1, 2 ).onChange( function ( val ) {
 					multiplier = val;
 					stonehenge();
+					CreateCar();
 
 				} );
 
@@ -365,25 +472,24 @@
 
 				requestAnimationFrame( animate );
 
-				// Enable 1st person, else crash
-
-				const delta = clock.getDelta();
-
-				controls_2.update( delta );
-
 				TardisGroup.rotation.y += .05;
 
+				//controls_2.update( clock.getDelta() );
+				const delta = clock.getDelta();
+
+				Cgroup.rotation.y -= 0.05;
+				if (mixerHuman) mixerHuman.update(delta);
+				if (mixerShrek) mixerShrek.update(delta);
 				render();
+
+				stats.update();
 
 			}
 
 			function render(){
-				renderer.render( scene, camera );
+				renderer.render( scene, camera,  car );
 			}
 
-			init();
-			animate();
-			buildGui();
 
 		</script>
 
