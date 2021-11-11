@@ -183,11 +183,12 @@
 
 						}
 
-						TardisGroup.add(tardis)
+						tardis.position.y = 500;
+						TardisGroup.add(tardis);
 
 					} );
 
-					scene.add( tardis );
+					scene.add( TardisGroup );
 
 				} );
 
@@ -370,7 +371,7 @@
 
 				controls_2.update( delta );
 
-				TardisGroup.rotation.z = 2;
+				TardisGroup.rotation.y += .05;
 
 				render();
 
