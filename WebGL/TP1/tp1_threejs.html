@@ -12,6 +12,8 @@
 
 			import * as THREE from '../three.js-master/build/three.module.js';
 
+			import Stats from '../three.js-master/examples/jsm/libs/stats.module.js';
+
 			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
 
 			import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
@@ -26,6 +28,9 @@
 			let light, hemiLight, fog = 0; // light
 			let camera, controls, controls_2; // camera
 			let mixer;
+			let stats;
+			let Cgroup, Cparent;
+			let car;
 			const clock = new THREE.Clock();
 
 			function set_material(UV_x, UV_y){
@@ -162,9 +167,13 @@
 
 			function init() {
 
+				const container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.set( 0, 1500 * multiplier, 500 * multiplier );
 				camera.rotation.x = -25 * Math.PI / 180;
+
 
 				scene = new THREE.Scene();
 				scene.fog = new THREE.FogExp2(0xaaccff, fog);
@@ -193,6 +202,10 @@
                     scene.add(object);
 
                 });
+
+				//Car's group
+				Cparent = new THREE.Group();
+				CreateCar();
 
 				// RENDER
 
@@ -257,6 +270,43 @@
 
 				window.addEventListener( 'resize', onWindowResize );
 
+				// stats
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+			}
+
+			function CreateCar(){
+				while(Cparent.children.length > 0){
+				    Cparent.remove(Cparent.children[0]);
+				}
+
+				//Car's group
+				Cgroup = new THREE.Group();
+
+				// Car model
+				const Cloader = new FBXLoader();
+				Cloader.load( 'models/trueno_panda_ae86.fbx', function ( car ) {
+
+
+					car.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					Cgroup.add(car);
+					car.rotation.z = 125;
+					car.position.x = 1700 * multiplier;
+					Cparent.add(Cgroup);
+					scene.add( Cparent );
+
+				} );
 			}
 
 			function buildGui() {
@@ -278,6 +328,7 @@
 				folderStonehenge.add( params, 'multiplier', 1, 2 ).onChange( function ( val ) {
 					multiplier = val;
 					stonehenge();
+					CreateCar();
 
 				} );
 
@@ -350,12 +401,16 @@
 				const delta = clock.getDelta();
 				if (mixer) mixer.update(delta);
 
+				Cgroup.rotation.y -= 0.05;
+
 				render();
+
+				stats.update();
 
 			}
 
 			function render(){
-				renderer.render( scene, camera );
+				renderer.render( scene, camera,  car );
 			}
 
 			init();
