@@ -31,6 +31,8 @@
 
 			let mixer;
 
+			let TardisGroup = new THREE.Group();
+
 			// STONEHENGE
 
 			function set_material(UV_x, UV_y){
@@ -165,9 +167,33 @@
 
 			}
 
+			function tardis(){
+
+				// MODEL
+				const loader = new FBXLoader();
+				loader.load( 'models/fbx/tardis.fbx', function ( tardis ) {
+					tardis.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+							let scaleValue = 50;
+							child.scale.set(scaleValue,scaleValue,scaleValue);
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+						TardisGroup.add(tardis)
+
+					} );
+
+					scene.add( tardis );
+
+				} );
+
+			}
+
 			// INIT
-
-
 
 			function init() {
 
@@ -240,39 +266,17 @@
 				parent = new THREE.Object3D();
 				scene.add( parent );
 
-				// MODEL
-				const loader = new FBXLoader();
-				loader.load( 'models/fbx/tardis.fbx', function ( object ) {
-
-					object.traverse( function ( child ) {
-
-						if ( child.isMesh ) {
-							let scaleValue = 50;
-							child.scale.set(scaleValue,scaleValue,scaleValue);
-
-							child.castShadow = true;
-							child.receiveShadow = true;
-
-						}
-
-					} );
-
-					scene.add( object );
-
-				} );
-
 				if (true) {
 
 				}
 				stonehenge();
+				tardis();
 
 				window.addEventListener( 'resize', onWindowResize );
 
 				// STATS
 				stats = new Stats();
 				container.appendChild( stats.dom );
-
-
 			}
 
 			function buildGui() {
@@ -365,6 +369,8 @@
 				const delta = clock.getDelta();
 
 				controls_2.update( delta );
+
+				TardisGroup.rotation.z = 2;
 
 				render();
 
