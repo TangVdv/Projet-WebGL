@@ -20,6 +20,10 @@
 
 			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
 
+			import Stats from '../three.js-master/examples/jsm/libs/stats.module.js';
+
+			import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
+
 			import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
 
 			import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
@@ -27,7 +31,7 @@
 			import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
 
 			let pillar_ext, pillar_int, cube_ext, cube_int, group, geometry, multiplier = 1;	//Stonehenge
-			let scene, renderer, gui; // scene
+			let scene, renderer, gui, stats, gpuPanel; // scene
 			let light, hemiLight, fog = 0; // light
       let Cgroup, Cparent, car;
 			let camera, controls, controls_2, stats; // camera
@@ -38,11 +42,14 @@
 
 			const clock = new THREE.Clock();
 
+			let TardisGroup = new THREE.Group();
+
 			let container = document.getElementById("container");
 			document.body.appendChild(container);
 			const start_button = document.getElementById('startbutton');
 			start_button.addEventListener('click', init);
-
+      
+      // STONEHENGE
 
 			function set_material(UV_x, UV_y){
 
@@ -178,8 +185,8 @@
 				}
 
 			}
-
-			function CreateCar(){
+      
+      function CreateCar(){
 				while(Cparent.children.length > 0){
 				    Cparent.remove(Cparent.children[0]);
 				}
@@ -198,8 +205,7 @@
 							child.receiveShadow = true;
 
 						}
-
-					} );
+        } );
 
 					Cgroup.add(car);
 					car.rotation.z = 125;
@@ -208,6 +214,27 @@
 					scene.add( Cparent );
 
 				} );
+			}
+
+			function tardis(){
+
+				// MODEL
+				const loader = new FBXLoader();
+				loader.load( 'models/fbx/tardis.fbx', function ( tardis ) {
+					tardis.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+							let scaleValue = 50;
+							child.scale.set(scaleValue,scaleValue,scaleValue);
+              tardis.position.y = 500;
+              
+
+					} );
+          TardisGroup.add(tardis);
+					scene.add( TardisGroup );
+
+				} );
+
 			}
 
 			function CreateRunHuman(){
@@ -277,6 +304,9 @@
 				camera.rotation.x = -25 * Math.PI / 180;
 
 				scene = new THREE.Scene();
+
+				// FOG
+
 				scene.fog = new THREE.FogExp2(0xaaccff, fog);
 
 				// RENDER
@@ -325,7 +355,7 @@
 
 				// GROUND
 
-				const floorMat = new THREE.MeshPhongMaterial( { color: 0x333333, dithering: true } );
+				const floorMat = new THREE.MeshPhongMaterial( { color: 0x333333 } );
 				const floorGeometry = new THREE.BoxGeometry( 20000, 1, 20000 );
 
 				const floorMesh = new THREE.Mesh( floorGeometry, floorMat );
@@ -335,7 +365,9 @@
 
 				parent = new THREE.Object3D();
 				scene.add( parent );
+
 				stonehenge();
+				tardis();
 
 				//Car's group
 				Cparent = new THREE.Group();
@@ -352,7 +384,6 @@
 				// stats
 				stats = new Stats();
 				container.appendChild( stats.dom );
-
 			}
 
 			function buildGui() {
@@ -407,11 +438,11 @@
 
 				const folderLight = gui.addFolder('Light');
 				folderLight.add( params, 'DensityPointLight', 0, 1 ).step( .001).onChange( function ( val ) {
-					hemiLight.intensity = val;
+					light.intensity = val;
 				} );
 
 				folderLight.add( params, 'DensityHemiLight', 0, 1 ).step( .001).onChange( function ( val ) {
-					light.intensity = val;
+					hemiLight.intensity = val;
 				} );
 
 
@@ -440,8 +471,8 @@
 			function animate() {
 
 				requestAnimationFrame( animate );
-				stats.update();
-				// Enable 1st person, else crash
+
+				TardisGroup.rotation.y += .05;
 
 				//controls_2.update( clock.getDelta() );
 				const delta = clock.getDelta();
