@@ -19,6 +19,8 @@
 
 			import * as THREE from '../three.js-master/build/three.module.js';
 
+			import Stats from '../three.js-master/examples/jsm/libs/stats.module.js';
+
 			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
 
 			import Stats  from '../three.js-master/examples/jsm/libs/stats.module.js';
@@ -32,13 +34,15 @@
 			let pillar_ext, pillar_int, cube_ext, cube_int, group, geometry, multiplier = 1;	//Stonehenge
 			let scene, renderer, gui; // scene
 			let light, hemiLight, fog = 0; // light
+      let Cgroup, Cparent, car;
 			let camera, controls, controls_2, stats; // camera
-			let mixer,runAction;
+			let runAction;
 			let container = document.getElementById("container");
+      
+      let mixer;
 
-
-			// const container = document.createElement('div');
 			document.body.appendChild(container);
+      
 			const clock = new THREE.Clock();
 
 
@@ -186,7 +190,7 @@
 
 				container = document.getElementById('container');
 			function init() {
-
+        
 				const overlay = document.getElementById('overlay');
 				overlay.remove();
 
@@ -212,26 +216,44 @@
 					});
 
 					scene.add(object);
-
-		// const animations = fbx.animations;
-
-		// 		mixer = new THREE.AnimationMixer(model);
-
-		// 		runAction = mixer.clipAction(animations[0]);
-
-		// 		actions = [runAction];
-
-		// 		activateAllActions();
-
-		// 		animate();
 				});
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.set( 0, 1500 * multiplier, 500 * multiplier );
 				camera.rotation.x = -25 * Math.PI / 180;
 
+
 				scene = new THREE.Scene();
 				scene.fog = new THREE.FogExp2(0xaaccff, fog);
+
+				const loader = new FBXLoader();
+                loader.load("models/shrek.fbx", function (object) {
+                    mixer = new THREE.AnimationMixer(object);
+
+										object.scale.set(10, 10, 10);
+										object.position.y = -100;
+
+                    const action = mixer.clipAction(object.animations[0]);
+                    action.play();
+
+                    object.traverse(function (child) {
+
+                        if (child.isMesh) {
+
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+
+                        }
+
+                    });
+
+                    scene.add(object);
+
+                });
+
+				//Car's group
+				Cparent = new THREE.Group();
+				CreateCar();
 
 				// RENDER
 
@@ -293,10 +315,47 @@
 				stonehenge();
 				render();
 				animate();
+        buildGui();
 
 				window.addEventListener( 'resize', onWindowResize );
 
-			buildGui();
+				// stats
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+			}
+
+			function CreateCar(){
+				while(Cparent.children.length > 0){
+				    Cparent.remove(Cparent.children[0]);
+				}
+
+				//Car's group
+				Cgroup = new THREE.Group();
+
+				// Car model
+				const Cloader = new FBXLoader();
+				Cloader.load( 'models/trueno_panda_ae86.fbx', function ( car ) {
+
+
+					car.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					Cgroup.add(car);
+					car.rotation.z = 125;
+					car.position.x = 1700 * multiplier;
+					Cparent.add(Cgroup);
+					scene.add( Cparent );
+
+				} );
 			}
 
 			function buildGui() {
@@ -318,6 +377,7 @@
 				folderStonehenge.add( params, 'multiplier', 1, 2 ).onChange( function ( val ) {
 					multiplier = val;
 					stonehenge();
+					CreateCar();
 
 				} );
 
@@ -385,16 +445,22 @@
 				requestAnimationFrame( animate );
 				stats.update();
 				// Enable 1st person, else crash
-				// controls_2.update(clock.getDelta() );
+
+				//controls_2.update( clock.getDelta() );
 				const delta = clock.getDelta();
+				if (mixer) mixer.update(delta);
+
+				Cgroup.rotation.y -= 0.05;
 
 				if (mixer) mixer.update(delta);
 				render();
 
+				stats.update();
+
 			}
 
 			function render(){
-				renderer.render( scene, camera );
+				renderer.render( scene, camera,  car );
 			}
 
 
