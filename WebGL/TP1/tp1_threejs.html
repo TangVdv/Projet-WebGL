@@ -20,21 +20,17 @@
 
 			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
 
-			import Stats from '../three.js-master/examples/jsm/libs/stats.module.js';
-
 			import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
 
 			import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
 
 			import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
 
-			import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
-
 			let pillar_ext, pillar_int, cube_ext, cube_int, group, geometry, multiplier = 1;	//Stonehenge
 			let scene, renderer, gui, stats, gpuPanel; // scene
 			let light, hemiLight, fog = 0; // light
       let Cgroup, Cparent, car;
-			let camera, controls, controls_2, stats; // camera
+			let camera, controls, controls_2; // camera
 			let runAction;
 			let loader;
 
@@ -48,7 +44,7 @@
 			document.body.appendChild(container);
 			const start_button = document.getElementById('startbutton');
 			start_button.addEventListener('click', init);
-      
+
       // STONEHENGE
 
 			function set_material(UV_x, UV_y){
@@ -185,7 +181,7 @@
 				}
 
 			}
-      
+
       function CreateCar(){
 				while(Cparent.children.length > 0){
 				    Cparent.remove(Cparent.children[0]);
@@ -227,9 +223,11 @@
 							let scaleValue = 50;
 							child.scale.set(scaleValue,scaleValue,scaleValue);
               tardis.position.y = 500;
-              
+							child.castShadow = true;
+							child.receiveShadow = true;
 
-					} );
+						}
+					});
           TardisGroup.add(tardis);
 					scene.add( TardisGroup );
 
@@ -239,11 +237,12 @@
 
 			function CreateRunHuman(){
 				loader = new FBXLoader();
-				loader.load("models/Standard-Run.fbx", function (Human) {
+				loader.load("models/fbx/Human.fbx", function (Human) {
 					mixerHuman = new THREE.AnimationMixer(Human);
 
 					Human.position.y -= 100;
-					Human.position.z = 300;
+					Human.position.x = 140;
+
 
 
 					const actionHuman = mixerHuman.clipAction(Human.animations[0]);
@@ -252,7 +251,6 @@
 					Human.traverse(function (child) {
 
 						if (child.Mesh) {
-
 							child.castShadow = true;
 							child.receiveShadow = true;
 
@@ -472,12 +470,12 @@
 
 				requestAnimationFrame( animate );
 
-				TardisGroup.rotation.y += .05;
-
-				//controls_2.update( clock.getDelta() );
 				const delta = clock.getDelta();
 
 				Cgroup.rotation.y -= 0.05;
+				TardisGroup.rotation.y += .05;
+
+				if (controls_2) controls_2.update(delta);
 				if (mixerHuman) mixerHuman.update(delta);
 				if (mixerShrek) mixerShrek.update(delta);
 				render();
