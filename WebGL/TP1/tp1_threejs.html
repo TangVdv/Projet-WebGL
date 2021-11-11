@@ -7,7 +7,14 @@
 		<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
 	</head>
 	<body>
+		<div id = "overlay">
+			<button id = "startbutton"> Start the Catastrophe </button>
+			<div id ="info">
+				<a href="https://three.js.org" target ="_blank" rel="noopener">three.js </a> webgl -An stonedge by <br> Mohamed El Fakharany & Thibault De Bremand & Tanguy Vandevoorde & Matiss Haillouy</br>
+			</div>
 
+		</div>
+<div id="container"></div>
 		<script type="module">
 
 			import * as THREE from '../three.js-master/build/three.module.js';
@@ -16,24 +23,34 @@
 
 			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
 
+			import Stats  from '../three.js-master/examples/jsm/libs/stats.module.js';
+
 			import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
 
 			import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
 
 			import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
 
-
 			let pillar_ext, pillar_int, cube_ext, cube_int, group, geometry, multiplier = 1;	//Stonehenge
 			let scene, renderer, gui; // scene
 			let light, hemiLight, fog = 0; // light
-			let camera, controls, controls_2; // camera
-			let mixer;
-			let stats;
-			let Cgroup, Cparent;
-			let car;
+      let Cgroup, Cparent, car;
+			let camera, controls, controls_2, stats; // camera
+			let runAction;
+			let container = document.getElementById("container");
+      
+      let mixer;
+
+			document.body.appendChild(container);
+      
 			const clock = new THREE.Clock();
 
+
+
 			function set_material(UV_x, UV_y){
+
+				stats = new Stats();
+				container.appendChild(stats.dom);
 				//Texture
 				const rockTexture = new THREE.TextureLoader().load('textures/roche.jpg');
 
@@ -46,6 +63,8 @@
 				const material = new THREE.MeshPhongMaterial( { map: rockTexture } );
 				return material;
 			}
+
+
 
 			function exterior_part(location, rotation){
 				geometry = new THREE.BoxGeometry( 100, 200, 50 );
@@ -164,11 +183,40 @@
 				}
 
 			}
+  		const start_button = document.getElementById('startbutton');
 
+			start_button.addEventListener('click', init);
+
+
+				container = document.getElementById('container');
 			function init() {
+        
+				const overlay = document.getElementById('overlay');
+				overlay.remove();
 
-				const container = document.createElement( 'div' );
-				document.body.appendChild( container );
+				//model
+				const loader = new FBXLoader();
+				loader.load("../three.js-master/examples/models/fbx/Standard-Run.fbx", function (object) {
+					mixer = new THREE.AnimationMixer(object);
+
+					mixer = new THREE.AnimationMixer(object);
+					object.position.y =-100;
+					const action = mixer.clipAction(object.animations[0]);
+					action.play();
+
+					object.traverse(function (child) {
+
+						if (child.Mesh) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					});
+
+					scene.add(object);
+				});
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.set( 0, 1500 * multiplier, 500 * multiplier );
@@ -230,7 +278,7 @@
 				controls.enablePan = false;
 
 				controls_2 = new FirstPersonControls(camera, renderer.domElement);
-        controls_2.movementSpeed = 10000;
+        controls_2.movementSpeed = 1000;
         controls_2.lookSpeed = 0.05;
         controls_2.lookVertical = true;
 				controls_2.enabled = false;
@@ -265,8 +313,9 @@
 				scene.add( parent );
 
 				stonehenge();
-
-				//
+				render();
+				animate();
+        buildGui();
 
 				window.addEventListener( 'resize', onWindowResize );
 
@@ -394,15 +443,16 @@
 			function animate() {
 
 				requestAnimationFrame( animate );
-
-				scene.rotation.y = 0;
+				stats.update();
 				// Enable 1st person, else crash
+
 				//controls_2.update( clock.getDelta() );
 				const delta = clock.getDelta();
 				if (mixer) mixer.update(delta);
 
 				Cgroup.rotation.y -= 0.05;
 
+				if (mixer) mixer.update(delta);
 				render();
 
 				stats.update();
@@ -413,9 +463,6 @@
 				renderer.render( scene, camera,  car );
 			}
 
-			init();
-			animate();
-			buildGui();
 
 		</script>
 
