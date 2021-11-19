@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+<<<<<<< Updated upstream
 	<head>
 		<title>Stonehenge</title>
 		<meta charset="utf-8">
@@ -79,110 +80,181 @@
 				group.add( pillar_ext );
 
 				//  / roof part \
+=======
+>>>>>>> Stashed changes
 
+<head>
+	<title>Stonehenge</title>
+	<meta charset="utf-8">
+	<meta name="viewport"
+		content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" href="bootstrap.min.css">
+	<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
+</head>
+
+<body>
+	<div id="overlay" class="d-flex justify-content-center">
+		<button class="btn-success btn-lg" id="startbutton">Start</button>
+	</div>
+	<div id="container"></div>
+	<script type="module">
+
+		import * as THREE from '../three.js-master/build/three.module.js';
+
+		import Stats from '../three.js-master/examples/jsm/libs/stats.module.js';
+
+		import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
+
+		import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
+
+		import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
+
+		import { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
+
+		let pillar_ext, pillar_int, cube_ext, cube_int, group, geometry, multiplier = 1;	//Stonehenge
+		let scene, renderer, gui, stats, gpuPanel; // scene
+		let light, hemiLight, fog = 0; // light
+		let Cgroup, Cparent, car;
+		let camera, controls, controls_2; // camera
+		let runAction;
+		let loader;
+
+		let mixerHuman, mixerShrek;
+
+		const clock = new THREE.Clock();
+
+		let TardisGroup = new THREE.Group();
+
+		let container = document.getElementById("container");
+		document.body.appendChild(container);
+		const start_button = document.getElementById('startbutton');
+		start_button.addEventListener('click', init);
+		const listener = new THREE.AudioListener();
+		camera.add(listener);
+
+		// STONEHENGE
+
+		function set_material(UV_x, UV_y) {
+
+			stats = new Stats();
+			container.appendChild(stats.dom);
+			//Texture
+			const rockTexture = new THREE.TextureLoader().load('textures/roche.jpg');
+
+			//Texture scale
+			rockTexture.wrapS = THREE.RepeatWrapping; // Texture is wrapped horizontally
+			rockTexture.wrapT = THREE.RepeatWrapping; // Texture is wrapped vertically
+			rockTexture.repeat.set(UV_x, UV_y); // Number of times the texture is repeated
+
+			//Material
+			const material = new THREE.MeshPhongMaterial({ map: rockTexture });
+			return material;
+		}
+
+		function exterior_part(location, rotation) {
+			geometry = new THREE.BoxGeometry(100, 200, 50);
+			//  / pillar part \
+			group = new THREE.Group();
+			//Create mesh
+			pillar_ext = new THREE.Mesh(geometry, set_material(2, 4));
+			//Set position to mesh
+			pillar_ext.position.z = location;
+			//Add mesh in group
+			pillar_ext.castShadow = true;
+			group.add(pillar_ext);
+
+			//  / roof part \
+
+			//Create mesh
+			pillar_ext = new THREE.Mesh(new THREE.BoxGeometry(location / 5, 50, 100), set_material(4 * multiplier, 2)); //Change la taille en x en rapport à la distance où il se trouve. Ici, on  divise par 5 car si on laissait la location de base, le toit serait 5 fois plus grand de base.
+			//Set position to mesh
+			pillar_ext.position.x = location / 10;
+			pillar_ext.position.z = location;
+			pillar_ext.position.y = 125;
+			pillar_ext.rotation.y = 5 * Math.PI / 180;
+			pillar_ext.castShadow = true;
+
+			//Add mesh in group
+			group.add(pillar_ext);
+
+			//   / Cube part \
+
+			//Create mesh
+			cube_ext = new THREE.Mesh(new THREE.BoxGeometry(50, 20, 20), set_material(2, 1));
+			//Set position to mesh
+			cube_ext.position.z = location / 1.25;
+			cube_ext.position.y = -90;
+			cube_ext.castShadow = true;
+
+			//Add mesh in group
+			group.add(cube_ext);
+
+			//Set rotation to group
+			group.rotation.y = rotation * Math.PI / 180;
+			//add group to scene
+			parent.add(group);
+		}
+
+		function interior_part(location, rotation) {
+			geometry = new THREE.BoxGeometry(100, 200, 50);
+			group = new THREE.Group();
+			let x = -100;
+			for (let i = 0; i < 2; i++) {
 				//Create mesh
-				pillar_ext = new THREE.Mesh( new THREE.BoxGeometry( location / 5, 50, 100 ), set_material(4 * multiplier,2) ); //Change la taille en x en rapport à la distance où il se trouve. Ici, on  divise par 5 car si on laissait la location de base, le toit serait 5 fois plus grand de base.
+				pillar_int = new THREE.Mesh(new THREE.BoxGeometry(100, 400, 70), set_material(2, 8));
 				//Set position to mesh
-				pillar_ext.position.x = location / 10;
-				pillar_ext.position.z = location;
-				pillar_ext.position.y = 125;
-				pillar_ext.rotation.y = 5 * Math.PI / 180;
-				pillar_ext.castShadow = true;
-
-				//Add mesh in group
-				group.add(pillar_ext);
-
-				//   / Cube part \
-
-				//Create mesh
-				cube_ext = new THREE.Mesh( new THREE.BoxGeometry( 50, 20, 20 ), set_material(2,1) );
-				//Set position to mesh
-				cube_ext.position.z = location / 1.25;
-				cube_ext.position.y = -90;
-				cube_ext.castShadow = true;
-
-				//Add mesh in group
-				group.add( cube_ext );
-
-				//Set rotation to group
-				group.rotation.y = rotation * Math.PI / 180;
-				//add group to scene
-				parent.add(group);
-			}
-
-			function interior_part(location, rotation){
-				geometry = new THREE.BoxGeometry( 100, 200, 50 );
-				group = new THREE.Group();
-				let x= -100;
-				for (let i = 0; i < 2; i++) {
-					//Create mesh
-					pillar_int = new THREE.Mesh( new THREE.BoxGeometry( 100, 400, 70 ), set_material(2, 8) );
-					//Set position to mesh
-					pillar_int.position.x = x;
-					pillar_int.position.z = location;
-					pillar_int.position.y = 100;
-					pillar_int.castShadow = true;
-					//Add mesh in group
-					group.add( pillar_int );
-					x += 200;
-				}
-
-				//  / roof part \
-
-				//Create mesh
-				pillar_int = new THREE.Mesh( new THREE.BoxGeometry( 320, 60, 80 ), set_material(6,2) );
-				//Set position to mesh
+				pillar_int.position.x = x;
 				pillar_int.position.z = location;
-				pillar_int.position.y = 330;
+				pillar_int.position.y = 100;
 				pillar_int.castShadow = true;
 				//Add mesh in group
 				group.add(pillar_int);
+				x += 200;
+			}
 
+			//  / roof part \
+
+			//Create mesh
+			pillar_int = new THREE.Mesh(new THREE.BoxGeometry(320, 60, 80), set_material(6, 2));
+			//Set position to mesh
+			pillar_int.position.z = location;
+			pillar_int.position.y = 330;
+			pillar_int.castShadow = true;
+			//Add mesh in group
+			group.add(pillar_int);
+
+			//Set rotation to group
+			group.rotation.y = rotation * Math.PI / 180;
+			//add group to scene
+			parent.add(group);
+
+			//    / Cube part \
+
+			x = -125;
+			for (var i = 0; i < 3; i++) {
+				group = new THREE.Group();
+				//Create mesh
+				cube_int = new THREE.Mesh(new THREE.BoxGeometry(50, 20, 20), set_material(2, 1));
+				//Set position to mesh
+				cube_int.position.z = location / 1.25;
+				cube_int.position.y = -90;
+				cube_int.position.x = x;
+				cube_int.castShadow = true;
+				//Add mesh in group
+				group.add(cube_int);
 				//Set rotation to group
 				group.rotation.y = rotation * Math.PI / 180;
 				//add group to scene
 				parent.add(group);
-
-				//    / Cube part \
-
-				x = -125;
-				for (var i = 0; i < 3; i++) {
-					group = new THREE.Group();
-					//Create mesh
-					cube_int = new THREE.Mesh( new THREE.BoxGeometry( 50, 20, 20 ), set_material(2,1) );
-					//Set position to mesh
-					cube_int.position.z = location / 1.25;
-					cube_int.position.y = -90;
-					cube_int.position.x = x;
-					cube_int.castShadow = true;
-					//Add mesh in group
-					group.add( cube_int );
-					//Set rotation to group
-					group.rotation.y = rotation * Math.PI / 180;
-					//add group to scene
-					parent.add(group);
-					x += 125;
-				}
+				x += 125;
 			}
+		}
 
-			function stonehenge(){
-				while(parent.children.length > 0){
-				    parent.remove(parent.children[0]);
-				}
-				let rotation_value = 0;
-
-				for (let i = 0; i < 30; i++) {
-					exterior_part(1000 * multiplier, rotation_value);
-					rotation_value += 12;
-				}
-
-				rotation_value = 0
-				for (let i = 0; i < 6; i++) {
-					interior_part(500 * multiplier, rotation_value);
-					rotation_value += 60;
-				}
-
+		function stonehenge() {
+			while (parent.children.length > 0) {
+				parent.remove(parent.children[0]);
 			}
+<<<<<<< Updated upstream
   		const start_button = document.getElementById('startbutton');
 
 			start_button.addEventListener('click', init);
@@ -210,9 +282,42 @@
 
 							child.castShadow = true;
 							child.receiveShadow = true;
+=======
+			let rotation_value = 0;
 
-						}
+			for (let i = 0; i < 30; i++) {
+				exterior_part(1000 * multiplier, rotation_value);
+				rotation_value += 12;
+			}
 
+			rotation_value = 0
+			for (let i = 0; i < 6; i++) {
+				interior_part(500 * multiplier, rotation_value);
+				rotation_value += 60;
+			}
+
+		}
+
+		function CreateCar() {
+			while (Cparent.children.length > 0) {
+				Cparent.remove(Cparent.children[0]);
+			}
+
+			//Car's group
+			Cgroup = new THREE.Group();
+
+			// Car model
+			const Cloader = new FBXLoader();
+			Cloader.load('models/trueno_panda_ae86.fbx', function (car) {
+				car.traverse(function (child) {
+
+					if (child.isMesh) {
+>>>>>>> Stashed changes
+
+						child.castShadow = true;
+						child.receiveShadow = true;
+
+<<<<<<< Updated upstream
 					});
 
 					scene.add(object);
@@ -229,10 +334,48 @@
 				const loader = new FBXLoader();
                 loader.load("models/shrek.fbx", function (object) {
                     mixer = new THREE.AnimationMixer(object);
+=======
+					}
+				});
+
+				Cgroup.add(car);
+				car.rotation.z = 125;
+				car.position.x = 1700 * multiplier;
+				Cparent.add(Cgroup);
+				scene.add(Cparent);
+
+			});
+		}
+
+		function tardis() {
+
+			// MODEL
+			const loader = new FBXLoader();
+			loader.load('models/fbx/tardis.fbx', function (tardis) {
+				tardis.traverse(function (child) {
+
+					if (child.isMesh) {
+						let scaleValue = 50;
+						child.scale.set(scaleValue, scaleValue, scaleValue);
+						tardis.position.y = 500;
+						child.castShadow = true;
+						child.receiveShadow = true;
+
+					}
+				});
+				TardisGroup.add(tardis);
+				scene.add(TardisGroup);
+
+			});
+
+		}
+
+>>>>>>> Stashed changes
 
 										object.scale.set(10, 10, 10);
 										object.position.y = -100;
 
+<<<<<<< Updated upstream
                     const action = mixer.clipAction(object.animations[0]);
                     action.play();
 
@@ -254,65 +397,192 @@
 				//Car's group
 				Cparent = new THREE.Group();
 				CreateCar();
+=======
+		function CreateShrek() {
+			loader = new FBXLoader();
+			loader.load("models/shrek.fbx", function (Shrek) {
+				mixerShrek = new THREE.AnimationMixer(Shrek);
 
-				// RENDER
+				Shrek.scale.set(10, 10, 10);
+				Shrek.position.y = -100;
 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
-				scene.background = new THREE.Color( 0x77b5fe );
+				const actionShrek = mixerShrek.clipAction(Shrek.animations[0]);
+				actionShrek.play();
 
-				renderer.shadowMap.enabled = true;
+				Shrek.traverse(function (child) {
+					if (child.isMesh) {
+						child.castShadow = true;
+						child.receiveShadow = true;
 
-				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-				renderer.outputEncoding = THREE.sRGBEncoding;
-				renderer.shadowMap.enabled = true;
+					}
+				});
+				scene.add(Shrek);
 
-				// CONTROL
+			});
 
-				controls = new OrbitControls( camera, renderer.domElement );
-				controls.addEventListener( 'change', renderer );
-				controls.minDistance = 1000;
-				controls.maxDistance = 2000;
-				controls.enablePan = false;
+		}
 
-				controls_2 = new FirstPersonControls(camera, renderer.domElement);
-        controls_2.movementSpeed = 1000;
-        controls_2.lookSpeed = 0.05;
-        controls_2.lookVertical = true;
-				controls_2.enabled = false;
 
-				// LIGHTS
+>>>>>>> Stashed changes
 
-				// Eclaire toute la scène
-				hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
-				hemiLight.color.setHSL( 0.6, 1, 0.6 ); // Couleur de la lumière
-				hemiLight.position.set( 0, 50, 0 );
-				scene.add( hemiLight );
 
-				// Eclaire le stonehenge et permet de rajouter les ombres
-				light = new THREE.PointLight( 0xffffff, .33, 10000 );
-				light.position.set( 1000, 2000, 1000 );
-				light.castShadow = true;
-				light.shadow.mapSize.width = 2048; //Qualité de l'ombre en largeur
-				light.shadow.mapSize.height = 2048; //Qualité de l'ombre en hauteur
-		    scene.add( light );
+		function init() {
 
-				// GROUND
+			const overlay = document.getElementById('overlay');
+			overlay.remove();
 
+			function CreateRunHuman() {
+				loader = new FBXLoader();
+				loader.load("models/fbx/Human.fbx", function (objectHuman) {
+					mixerHuman = new THREE.AnimationMixer(objectHuman);
+
+					objectHuman.position.y -= 100;
+					objectHuman.position.x = 140;
+
+
+
+					const actionHuman = mixerHuman.clipAction(objectHuman.animations[0]);
+					actionHuman.play();
+
+					objectHuman.traverse(function (child) {
+
+						if (child.Mesh) {
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+<<<<<<< Updated upstream
 				const floorMat = new THREE.MeshPhongMaterial( { color: 0x333333, dithering: true } );
 				const floorGeometry = new THREE.BoxGeometry( 20000, 1, 20000 );
+=======
+					});
+					scene.add(objectHuman);
+					Human = objectHuman;
+				});
+>>>>>>> Stashed changes
 
-				const floorMesh = new THREE.Mesh( floorGeometry, floorMat );
-				floorMesh.position.set( 0, -100, 0 );
-				floorMesh.receiveShadow  = true;
-				scene.add( floorMesh );
 
-				parent = new THREE.Object3D();
-				scene.add( parent );
+			}
+			// song
+			const sound = new THREE.Audio(listener);
+			const audioloader = new THREE.AudioLoader();
+			audioloader.load('Music/GOKUSSJ3.MP3', function (buffer) {
+				sound.setBuffer(buffer)
+				sound.setLoop(true);
+				sound.setVolume(0.5);
+				sound.play();
+				Human.add(sound);
+			});
+			//model
 
+			camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
+			camera.position.set(0, 1500 * multiplier, 500 * multiplier);
+			camera.rotation.x = -25 * Math.PI / 180;
+
+			scene = new THREE.Scene();
+
+			// FOG
+
+			scene.fog = new THREE.FogExp2(0xaaccff, fog);
+
+			// RENDER
+
+			renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+			scene.background = new THREE.Color(0x77b5fe);
+
+			renderer.shadowMap.enabled = true;
+
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			renderer.outputEncoding = THREE.sRGBEncoding;
+			renderer.shadowMap.enabled = true;
+
+			// CONTROL
+
+			controls = new OrbitControls(camera, renderer.domElement);
+			controls.addEventListener('change', renderer);
+			controls.minDistance = 1000;
+			controls.maxDistance = 2000;
+			controls.enablePan = false;
+
+			controls_2 = new FirstPersonControls(camera, renderer.domElement);
+			controls_2.movementSpeed = 1000;
+			controls_2.lookSpeed = 0.05;
+			controls_2.lookVertical = true;
+			controls_2.enabled = false;
+
+			// LIGHTS
+
+			// Eclaire toute la scène
+			hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+			hemiLight.color.setHSL(0.6, 1, 0.6); // Couleur de la lumière
+			hemiLight.position.set(0, 50, 0);
+			scene.add(hemiLight);
+
+			// Eclaire le stonehenge et permet de rajouter les ombres
+			light = new THREE.PointLight(0xffffff, .33, 10000);
+			light.position.set(1000, 2000, 1000);
+			light.castShadow = true;
+			light.shadow.mapSize.width = 2048; //Qualité de l'ombre en largeur
+			light.shadow.mapSize.height = 2048; //Qualité de l'ombre en hauteur
+			scene.add(light);
+
+			// GROUND
+
+			const floorMat = new THREE.MeshPhongMaterial({ color: 0x333333 });
+			const floorGeometry = new THREE.BoxGeometry(20000, 1, 20000);
+
+			const floorMesh = new THREE.Mesh(floorGeometry, floorMat);
+			floorMesh.position.set(0, -100, 0);
+			floorMesh.receiveShadow = true;
+			scene.add(floorMesh);
+
+			parent = new THREE.Object3D();
+			scene.add(parent);
+
+			stonehenge();
+			tardis();
+
+			//Car's group
+			Cparent = new THREE.Group();
+			CreateCar();
+
+			render();
+			animate();
+			buildGui();
+			CreateShrek();
+			CreateRunHuman();
+
+			window.addEventListener('resize', onWindowResize);
+
+			// stats
+			stats = new Stats();
+			container.appendChild(stats.dom);
+		}
+
+		function buildGui() {
+
+			gui = new GUI();
+
+			const params = {
+				'multiplier': multiplier,
+				'background color': scene.background.getHex(),
+				'first person controls': 'Off',
+				'orbit controls': 'On',
+				'fog': fog,
+				'fog_color': scene.fog.color.getHex(),
+				'DensityPointLight': 0,
+				'DensityHemiLight': 0
+			};
+
+			const folderStonehenge = gui.addFolder('StoneHenge');
+			folderStonehenge.add(params, 'multiplier', 1, 2).onChange(function (val) {
+				multiplier = val;
 				stonehenge();
+<<<<<<< Updated upstream
 				render();
 				animate();
         buildGui();
@@ -357,57 +627,45 @@
 
 				} );
 			}
+=======
+				CreateCar();
 
-			function buildGui() {
+			});
 
-				gui = new GUI();
-
-				const params = {
-					'multiplier': multiplier,
-					'background color': scene.background.getHex(),
-					'first person controls': 'Off',
-					'orbit controls': 'On',
-					'fog': fog,
-					'fog_color': scene.fog.color.getHex(),
-					'DensityPointLight': 0,
-					'DensityHemiLight': 0
-				};
-
-				const folderStonehenge = gui.addFolder('StoneHenge');
-				folderStonehenge.add( params, 'multiplier', 1, 2 ).onChange( function ( val ) {
-					multiplier = val;
-					stonehenge();
-					CreateCar();
-
-				} );
-
-				const folderCamera = gui.addFolder('Camera');
-				folderCamera.add( params, 'first person controls', [ 'Off', 'On' ] ).onChange( function ( params ) {
-					if (params == 'On') {
-						controls_2.enabled = true;
-					}
-					if (params == 'Off') {
-						controls_2.enabled = false;
-					}
-				} );
-				folderCamera.add( params, 'orbit controls', [ 'On', 'Off' ] ).onChange( function ( params ) {
-					if (params == 'On') {
-						controls.enabled = true;
-					}
-					if (params == 'Off') {
-						controls.enabled = false;
-					}
-				} );
+			const folderCamera = gui.addFolder('Camera');
+			folderCamera.add(params, 'first person controls', ['Off', 'On']).onChange(function (params) {
+				if (params == 'On') {
+					controls_2.enabled = true;
+				}
+				if (params == 'Off') {
+					controls_2.enabled = false;
+				}
+			});
+			folderCamera.add(params, 'orbit controls', ['On', 'Off']).onChange(function (params) {
+				if (params == 'On') {
+					controls.enabled = true;
+				}
+				if (params == 'Off') {
+					controls.enabled = false;
+				}
+			});
+>>>>>>> Stashed changes
 
 
-				const folderFog = gui.addFolder('Fog');
-				folderFog.add( params, 'fog', 0, .0007).step(.00001).onChange( function ( val ) {
-						scene.fog.density = val;
-				} );
-				folderFog.addColor( params, 'fog_color').onChange( function ( val ) {
-						scene.fog.color.setHex(val)
-				} );
+			const folderFog = gui.addFolder('Fog');
+			folderFog.add(params, 'fog', 0, .0007).step(.00001).onChange(function (val) {
+				scene.fog.density = val;
+			});
+			folderFog.addColor(params, 'fog_color').onChange(function (val) {
+				scene.fog.color.setHex(val)
+			});
 
+			const folderLight = gui.addFolder('Light');
+			folderLight.add(params, 'DensityPointLight', 0, 1).step(.001).onChange(function (val) {
+				light.intensity = val;
+			});
+
+<<<<<<< Updated upstream
 				const folderLight = gui.addFolder('Light');
 				folderLight.add( params, 'DensityPointLight', 0, 1 ).step( .001).onChange( function ( val ) {
 					hemiLight.intensity = val;
@@ -416,32 +674,40 @@
 				folderLight.add( params, 'DensityHemiLight', 0, 1 ).step( .001).onChange( function ( val ) {
 					light.intensity = val;
 				} );
+=======
+			folderLight.add(params, 'DensityHemiLight', 0, 1).step(.001).onChange(function (val) {
+				hemiLight.intensity = val;
+			});
+
+>>>>>>> Stashed changes
+
+			gui.addColor(params, 'background color').onChange(function (val) {
+
+				scene.background.setHex(val);
+				render();
+
+			});
 
 
-				gui.addColor( params, 'background color' ).onChange( function ( val ) {
 
-					scene.background.setHex( val );
-					render();
+			gui.open();
 
-				} );
+		}
 
+		function onWindowResize() {
 
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
 
-				gui.open();
+			renderer.setSize(window.innerWidth, window.innerHeight);
 
-			}
+		}
 
-			function onWindowResize() {
+		function animate() {
 
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
+			requestAnimationFrame(animate);
 
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-			}
-
-			function animate() {
-
+<<<<<<< Updated upstream
 				requestAnimationFrame( animate );
 				stats.update();
 				// Enable 1st person, else crash
@@ -454,17 +720,29 @@
 
 				if (mixer) mixer.update(delta);
 				render();
+=======
+			const delta = clock.getDelta();
 
-				stats.update();
+			Cgroup.rotation.y -= 0.05;
+			TardisGroup.rotation.y += .05;
 
-			}
+			if (controls_2) controls_2.update(delta);
+			if (mixerHuman) mixerHuman.update(delta);
+			if (mixerShrek) mixerShrek.update(delta);
+			render();
 
-			function render(){
-				renderer.render( scene, camera,  car );
-			}
+			stats.update();
+>>>>>>> Stashed changes
+
+		}
+
+		function render() {
+			renderer.render(scene, camera, car);
+		}
 
 
-		</script>
+	</script>
 
-	</body>
+</body>
+
 </html>
