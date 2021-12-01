@@ -7,10 +7,21 @@
 		<link rel="stylesheet" href="bootstrap.min.css">
 		<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
 	</head>
-	<body>
+	<body class="bg-dark">
 		<div id = "overlay" class="d-flex justify-content-center">
-			<button class="btn-success btn-lg" id = "startbutton">Start</button>
+			<button class="btn-success btn-lg" id = "startButton">Start</button>
 		</div>
+		<!--
+		<audio id="TardisAudioMp3" loop preload="auto" style="display: none">
+			<source src="Music/Doctor Who Saison 13 Flux Générique.mp3" type="audio/mpeg">
+		</audio>
+		<audio id="goku" loop preload="auto" style="display: none">
+			<source src="Music/goku.mp3" type="audio/mpeg">
+		</audio>
+		<audio id="ambientsound" loop preload="auto" style="display: none">
+			<source src="Music/music.mp3" type="audio/mpeg">
+		</audio>
+	-->
 <div id="container"></div>
 		<script type="module">
 
@@ -30,7 +41,8 @@
 			let scene, renderer, gui, stats, gpuPanel; // scene
 			let light, hemiLight, fog = 0; // light
       let Cgroup, Cparent, car;
-			let camera, controls, controls_2; // camera
+			let controls, controls_2; // camera
+			let soundTardis, soundHuman, soundAmbient; // Sound
 			let runAction;
 			let loader;
 
@@ -38,12 +50,22 @@
 
 			const clock = new THREE.Clock();
 
+			const startButton = document.getElementById( 'startButton' );
+			startButton.addEventListener( 'click', init );
+
 			let TardisGroup = new THREE.Group();
 
 			let container = document.getElementById("container");
 			document.body.appendChild(container);
-			const start_button = document.getElementById('startbutton');
-			start_button.addEventListener('click', init);
+
+			const camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+			camera.position.set( 0, 1500 * multiplier, 3000 * multiplier );
+			camera.rotation.x = -25 * Math.PI / 180;
+
+			const listener = new THREE.AudioListener();
+			camera.add( listener );
+
+			const sound = new THREE.Audio( listener );
 
       // STONEHENGE
 
@@ -194,14 +216,13 @@
 				const Cloader = new FBXLoader();
 				Cloader.load( 'models/trueno_panda_ae86.fbx', function ( car ) {
 					car.traverse( function ( child ) {
-
 						if ( child.isMesh ) {
 
 							child.castShadow = true;
 							child.receiveShadow = true;
 
 						}
-        } );
+        	});
 
 					Cgroup.add(car);
 					car.rotation.z = 125;
@@ -209,7 +230,7 @@
 					Cparent.add(Cgroup);
 					scene.add( Cparent );
 
-				} );
+				});
 			}
 
 			function tardis(){
@@ -218,48 +239,70 @@
 				const loader = new FBXLoader();
 				loader.load( 'models/fbx/tardis.fbx', function ( tardis ) {
 					tardis.traverse( function ( child ) {
-
 						if ( child.isMesh ) {
 							let scaleValue = 50;
 							child.scale.set(scaleValue,scaleValue,scaleValue);
-              tardis.position.y = 500;
+              tardis.position.y = 1500;
 							child.castShadow = true;
 							child.receiveShadow = true;
 
 						}
 					});
+					soundTardis = new THREE.PositionalAudio(listener);
+					const TardisAudio = new THREE.AudioLoader();
+					TardisAudio.load( 'Music/DoctorWho.mp3', function( buffer ) {
+						soundTardis.setBuffer( buffer );
+						soundTardis.setLoop( true );
+						soundTardis.setVolume( 2 );
+						soundTardis.setRefDistance(30);
+						soundTardis.play();
+					});
+					tardis.add(soundTardis);
+					scene.add(TardisGroup);
           TardisGroup.add(tardis);
-					scene.add( TardisGroup );
 
-				} );
+				});
 
 			}
 
-			function CreateRunHuman(){
-				loader = new FBXLoader();
-				loader.load("models/fbx/Human.fbx", function (Human) {
-					mixerHuman = new THREE.AnimationMixer(Human);
+			let Human = new THREE.Group();
+	    function CreateRunHuman() {
+        loader = new FBXLoader();
+        loader.load("models/fbx/Human.fbx", function (objectHuman) {
+          mixerHuman = new THREE.AnimationMixer(objectHuman);
 
-					Human.position.y -= 100;
-					Human.position.x = 140;
+          objectHuman.position.y -= 100;
+          objectHuman.position.x = 140;
 
+	        const actionHuman = mixerHuman.clipAction(objectHuman.animations[0]);
+	        actionHuman.play();
 
+	        objectHuman.traverse(function (child) {
+	            if (child.isMesh) {
+	                child.castShadow = true;
+	                child.receiveShadow = true;
 
-					const actionHuman = mixerHuman.clipAction(Human.animations[0]);
-					actionHuman.play();
+	            }
+			    });
 
-					Human.traverse(function (child) {
+					// song
 
-						if (child.Mesh) {
-							child.castShadow = true;
-							child.receiveShadow = true;
-
-						}
-
+					soundHuman = new THREE.PositionalAudio(listener);
+					const goku = new THREE.AudioLoader();
+					goku.load( 'Music/goku.mp3', function( buffer ) {
+						soundHuman.setBuffer( buffer );
+						soundHuman.setLoop( true );
+						soundHuman.setVolume( 0.4 );
+						soundHuman.setRefDistance(30);
+						soundHuman.play();
 					});
-					scene.add(Human);
-				});
 
+					objectHuman.add(soundHuman);
+
+					scene.add(Human);
+					Human.add(objectHuman);
+
+      	});
 
 			}
 
@@ -287,21 +330,22 @@
 
 			}
 
-
-
-
 			function init() {
 
 				const overlay = document.getElementById('overlay');
 				overlay.remove();
 
-				//model
-
-				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
-				camera.position.set( 0, 1500 * multiplier, 500 * multiplier );
-				camera.rotation.x = -25 * Math.PI / 180;
-
 				scene = new THREE.Scene();
+
+				// MUSIC
+
+				const audioLoader = new THREE.AudioLoader();
+				audioLoader.load( 'Music/music.mp3', function( buffer ) {
+					sound.setBuffer( buffer );
+					sound.setLoop( true );
+					sound.setVolume( 0.1 );
+					sound.play();
+				});
 
 				// FOG
 
@@ -328,12 +372,12 @@
 				controls.minDistance = 1000;
 				controls.maxDistance = 2000;
 				controls.enablePan = false;
+				controls.enabled = false
 
 				controls_2 = new FirstPersonControls(camera, renderer.domElement);
         controls_2.movementSpeed = 1000;
         controls_2.lookSpeed = 0.05;
         controls_2.lookVertical = true;
-				controls_2.enabled = false;
 
 				// LIGHTS
 
@@ -386,8 +430,6 @@
 
 			function buildGui() {
 
-				gui = new GUI();
-
 				const params = {
 					'multiplier': multiplier,
 					'background color': scene.background.getHex(),
@@ -398,6 +440,19 @@
 					'DensityPointLight': 0,
 					'DensityHemiLight': 0
 				};
+
+				const SoundControls = function () {
+
+					//this.master = listener.getMasterVolume();
+					//this.tardis = soundTardis.getVolume();
+					//this.human = soundHuman.getVolume();
+					//this.ambient = sound.getVolume();
+
+				};
+
+				gui = new GUI();
+				const soundControls = new SoundControls();
+
 
 				const folderStonehenge = gui.addFolder('StoneHenge');
 				folderStonehenge.add( params, 'multiplier', 1, 2 ).onChange( function ( val ) {
@@ -438,11 +493,25 @@
 				folderLight.add( params, 'DensityPointLight', 0, 1 ).step( .001).onChange( function ( val ) {
 					light.intensity = val;
 				} );
-
 				folderLight.add( params, 'DensityHemiLight', 0, 1 ).step( .001).onChange( function ( val ) {
 					hemiLight.intensity = val;
 				} );
 
+				/*
+				const folderSound = gui.addFolder('Sound');
+				folderSound.add( soundControls, 'Master' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
+					listener.setMasterVolume( soundControls.master );
+				} );
+				folderSound.add( soundControls, 'Tardis' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
+					soundTardis.setVolume( soundControls.tardis );
+				} );
+				folderSound.add( soundControls, 'Human' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
+					soundHuman.setVolume( soundControls.human );
+				} );
+				folderSound.add( soundControls, 'Ambient' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
+					soundAmbient.setVolume( soundControls.ambient );
+				} );
+				*/
 
 				gui.addColor( params, 'background color' ).onChange( function ( val ) {
 
