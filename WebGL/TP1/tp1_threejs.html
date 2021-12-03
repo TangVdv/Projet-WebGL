@@ -42,7 +42,7 @@
 			let light, hemiLight, fog = 0; // light
       let Cgroup, Cparent, car;
 			let controls, controls_2; // camera
-			let soundTardis, soundHuman, soundAmbient; // Sound
+			let soundTardis, soundHuman, soundAmbient, vroomSound; // Sound
 			let runAction;
 			let loader;
 
@@ -224,9 +224,26 @@
 						}
         	});
 
+
+
+					// song
+
+					vroomSound = new THREE.PositionalAudio(listener);
+					const TruenoPandaAe86Incroyable = new THREE.AudioLoader();
+					TruenoPandaAe86Incroyable.load( 'Music/vroom.mp3', function( carrRr ) {
+						vroomSound.setBuffer( carrRr );
+						vroomSound.setLoop( true );
+						vroomSound.setVolume( 3 );
+						vroomSound.setRefDistance(15);
+						vroomSound.play();
+					});
+
+					car.add(vroomSound);
+
 					Cgroup.add(car);
 					car.rotation.z = 125;
 					car.position.x = 1700 * multiplier;
+
 					Cparent.add(Cgroup);
 					scene.add( Cparent );
 
@@ -343,7 +360,7 @@
 				audioLoader.load( 'Music/music.mp3', function( buffer ) {
 					sound.setBuffer( buffer );
 					sound.setLoop( true );
-					sound.setVolume( 0.1 );
+					sound.setVolume( 0.05 );
 					sound.play();
 				});
 
