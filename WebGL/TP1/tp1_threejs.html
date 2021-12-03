@@ -12,17 +12,26 @@
 			<img src="ae86.jpg" style="width: 100%"/>
 			<button class="btn-success btn-lg" id = "startButton">Start</button>
 		</div>
-		<!--
-		<audio id="TardisAudioMp3" loop preload="auto" style="display: none">
-			<source src="Music/Doctor Who Saison 13 Flux Générique.mp3" type="audio/mpeg">
-		</audio>
-		<audio id="goku" loop preload="auto" style="display: none">
-			<source src="Music/goku.mp3" type="audio/mpeg">
-		</audio>
-		<audio id="ambientsound" loop preload="auto" style="display: none">
-			<source src="Music/music.mp3" type="audio/mpeg">
-		</audio>
-	-->
+		<div class= "d-flex justify-content-center">
+			<div class="flex-column">
+				<div class="progress m-2">
+					<span class="input-group-text p-2">Son tardis : </span>
+		  		<progress id="analyser1" class="progress-bar"  value="0	" max=".2"></progress>
+				</div>
+				<div class="progress m-2">
+					<span class="input-group-text p-2">Son personnage : </span>
+					<progress id="analyser2" class="progress-bar"  value="0	" max=".2"></progress>
+				</div>
+				<div class="progress m-2">
+					<span class="input-group-text p-2">Son voiture : </span>
+					<progress id="analyser3" class="progress-bar"  value="0	" max=".2"></progress>
+				</div>
+				<div class="progress m-2">
+					<span class="input-group-text p-2">Son ambient : </span>
+					<progress id="analyser4" class="progress-bar"  value="0	" max=".2"></progress>
+				</div>
+			</div>
+		</div>
 <div id="container"></div>
 		<script type="module">
 
@@ -46,8 +55,14 @@
 			let soundTardis, soundHuman, soundAmbient, vroomSound; // Sound
 			let runAction;
 			let loader;
+			let analyser_tardis, analyser_human, analyser_car, analyser_ambient; // analyser
 
       let mixerHuman, mixerShrek;
+
+			const progress1 = document.getElementById("analyser1");
+			const progress2 = document.getElementById("analyser2");
+			const progress3 = document.getElementById("analyser3");
+			const progress4 = document.getElementById("analyser4");
 
 			const clock = new THREE.Clock();
 
@@ -66,11 +81,6 @@
 			const listener = new THREE.AudioListener();
 			camera.add( listener );
 
-			const sound = new THREE.Audio( listener );
-
-			const analyser = new THREE.AudioAnalyser( sound, 32 );
-
-			const data = analyser.getAverageFrequency();
       // STONEHENGE
 
 			function set_material(UV_x, UV_y){
@@ -228,20 +238,18 @@
 						}
         	});
 
-
-
-					// song
+					// song car
 
 					vroomSound = new THREE.PositionalAudio(listener);
 					const TruenoPandaAe86Incroyable = new THREE.AudioLoader();
-					TruenoPandaAe86Incroyable.load( 'Music/vroom.mp3', function( carrRr ) {
-						vroomSound.setBuffer( carrRr );
+					TruenoPandaAe86Incroyable.load( 'Music/vroom.mp3', function( musique ) {
+						vroomSound.setBuffer( musique );
 						vroomSound.setLoop( true );
-						vroomSound.setVolume( 3 );
-						vroomSound.setRefDistance(15);
+						vroomSound.setVolume( 20 );
+						vroomSound.setRefDistance(6);
 						vroomSound.play();
 					});
-
+					analyser_car = new THREE.AudioAnalyser( vroomSound, 32 );
 					car.add(vroomSound);
 
 					Cgroup.add(car);
@@ -269,15 +277,19 @@
 
 						}
 					});
+
+					// song tardis
+
 					soundTardis = new THREE.PositionalAudio(listener);
 					const TardisAudio = new THREE.AudioLoader();
-					TardisAudio.load( 'Music/DoctorWho.mp3', function( buffer ) {
-						soundTardis.setBuffer( buffer );
+					TardisAudio.load( 'Music/DoctorWho.mp3', function( musique ) {
+						soundTardis.setBuffer( musique );
 						soundTardis.setLoop( true );
-						soundTardis.setVolume( 2 );
-						soundTardis.setRefDistance(30);
+						soundTardis.setVolume( 40 );
+						soundTardis.setRefDistance(5);
 						soundTardis.play();
 					});
+					analyser_tardis = new THREE.AudioAnalyser( soundTardis	, 32 );
 					tardis.add(soundTardis);
 					scene.add(TardisGroup);
           TardisGroup.add(tardis);
@@ -306,18 +318,18 @@
 	            }
 			    });
 
-					// song
+					// song human
 
 					soundHuman = new THREE.PositionalAudio(listener);
 					const goku = new THREE.AudioLoader();
-					goku.load( 'Music/goku.mp3', function( buffer ) {
-						soundHuman.setBuffer( buffer );
+					goku.load( 'Music/goku.mp3', function( musique ) {
+						soundHuman.setBuffer( musique );
 						soundHuman.setLoop( true );
-						soundHuman.setVolume( 0.4 );
-						soundHuman.setRefDistance(30);
+						soundHuman.setVolume( 80 );
+						soundHuman.setRefDistance(5);
 						soundHuman.play();
 					});
-
+					analyser_human = new THREE.AudioAnalyser( soundHuman, 32 );
 					objectHuman.add(soundHuman);
 
 					scene.add(Human);
@@ -358,15 +370,17 @@
 
 				scene = new THREE.Scene();
 
-				// MUSIC
+				// song ambient
 
+				const sound = new THREE.Audio( listener );
 				const audioLoader = new THREE.AudioLoader();
-				audioLoader.load( 'Music/music.mp3', function( buffer ) {
-					sound.setBuffer( buffer );
+				audioLoader.load( 'Music/music.mp3', function( musique ) {
+					sound.setBuffer( musique );
 					sound.setLoop( true );
 					sound.setVolume( 0.05 );
 					sound.play();
 				});
+				analyser_ambient = new THREE.AudioAnalyser( sound , 32 );
 
 				// FOG
 
@@ -454,27 +468,15 @@
 				const params = {
 					'multiplier': multiplier,
 					'background color': scene.background.getHex(),
-					'first person controls': 'Off',
-					'orbit controls': 'On',
+					'first person controls': 'On',
+					'orbit controls': 'Off',
 					'fog': fog,
 					'fog_color': scene.fog.color.getHex(),
 					'DensityPointLight': 0,
-					'DensityHemiLight': 0
-				};
-
-				const SoundControls = function () {
-
-					//this.master = listener.getMasterVolume();
-					//this.tardis = soundTardis.getVolume();
-					//this.human = soundHuman.getVolume();
-					//this.ambient = sound.getVolume();
-
+					'DensityHemiLight': 0,
 				};
 
 				gui = new GUI();
-				const soundControls = new SoundControls();
-
-
 				const folderStonehenge = gui.addFolder('StoneHenge');
 				folderStonehenge.add( params, 'multiplier', 1, 2 ).onChange( function ( val ) {
 					multiplier = val;
@@ -484,7 +486,7 @@
 				} );
 
 				const folderCamera = gui.addFolder('Camera');
-				folderCamera.add( params, 'first person controls', [ 'Off', 'On' ] ).onChange( function ( params ) {
+				folderCamera.add( params, 'first person controls', [ 'On', 'Off' ] ).onChange( function ( params ) {
 					if (params == 'On') {
 						controls_2.enabled = true;
 					}
@@ -492,12 +494,12 @@
 						controls_2.enabled = false;
 					}
 				} );
-				folderCamera.add( params, 'orbit controls', [ 'On', 'Off' ] ).onChange( function ( params ) {
-					if (params == 'On') {
-						controls.enabled = true;
-					}
+				folderCamera.add( params, 'orbit controls', [ 'Off', 'On' ] ).onChange( function ( params ) {
 					if (params == 'Off') {
 						controls.enabled = false;
+					}
+					if (params == 'On') {
+						controls.enabled = true;
 					}
 				} );
 
@@ -517,23 +519,6 @@
 				folderLight.add( params, 'DensityHemiLight', 0, 1 ).step( .001).onChange( function ( val ) {
 					hemiLight.intensity = val;
 				} );
-
-				/*
-				const folderSound = gui.addFolder('Sound');
-				folderSound.add( soundControls, 'Master' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
-					listener.setMasterVolume( soundControls.master );
-				} );
-				folderSound.add( soundControls, 'Tardis' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
-					soundTardis.setVolume( soundControls.tardis );
-				} );
-				folderSound.add( soundControls, 'Human' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
-					soundHuman.setVolume( soundControls.human );
-				} );
-				folderSound.add( soundControls, 'Ambient' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
-					soundAmbient.setVolume( soundControls.ambient );
-				} );
-				*/
-
 				gui.addColor( params, 'background color' ).onChange( function ( val ) {
 
 					scene.background.setHex( val );
@@ -576,6 +561,11 @@
 
 			function render(){
 				renderer.render( scene, camera,  car );
+
+				if (analyser_tardis) progress1.value = analyser_tardis.getAverageFrequency() / 256;
+				if (analyser_human) progress2.value = analyser_human.getAverageFrequency() / 256;
+				if (analyser_car) progress3.value = analyser_car.getAverageFrequency() / 256;
+				if (analyser_ambient) progress4.value = analyser_ambient.getAverageFrequency() / 256;
 			}
 
 
