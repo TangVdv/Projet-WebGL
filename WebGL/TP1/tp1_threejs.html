@@ -4,11 +4,12 @@
 		<title>Stonehenge</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link rel="stylesheet" href="bootstrap.min.css">
-		<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<link type="text/css" rel="stylesheet" href="bootstrap.min.css">
 	</head>
 	<body class="bg-dark">
 		<div id = "overlay" class="d-flex justify-content-center">
+			<img src="ae86.jpg" style="width: 100%"/>
 			<button class="btn-success btn-lg" id = "startButton">Start</button>
 		</div>
 		<!--
@@ -67,6 +68,9 @@
 
 			const sound = new THREE.Audio( listener );
 
+			const analyser = new THREE.AudioAnalyser( sound, 32 );
+
+			const data = analyser.getAverageFrequency();
       // STONEHENGE
 
 			function set_material(UV_x, UV_y){
@@ -393,7 +397,7 @@
 
 				controls_2 = new FirstPersonControls(camera, renderer.domElement);
         controls_2.movementSpeed = 1000;
-        controls_2.lookSpeed = 0.05;
+        controls_2.lookSpeed = 0.1;
         controls_2.lookVertical = true;
 
 				// LIGHTS
