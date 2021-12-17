@@ -38,6 +38,10 @@
 
 			import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
 
+			import { OBJLoader } from '../three.js-master/examples/jsm/loaders/OBJLoader.js';
+
+			import { MTLLoader } from '../three.js-master/examples/jsm/loaders/MTLLoader.js';
+
 			let pillar_ext, pillar_int, cube_ext, cube_int, group, geometry, multiplier = 1;	//Stonehenge
 			let scene, renderer, gui, stats, gpuPanel; // scene
 			let light, hemiLight, fog = 0; // light
@@ -283,6 +287,23 @@
           TardisGroup.add(tardis);
 
 				});
+
+				new MTLLoader()
+					.setPath( 'models/maps/' )
+					.load( 'Planet Destroyed.mtl', function ( materials ) {
+
+						materials.preload();
+
+						new OBJLoader()
+							.setMaterials( materials )
+							.setPath( 'models/maps/' )
+							.load( 'Planet Destroyed.obj', function ( planet ) {
+								scene.add( planet );
+								planet.scale.set(10,10,10);
+
+							});
+
+					} );
 
 			}
 
