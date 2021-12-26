@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - FBX loader</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+	</head>
+
+	<body>
+    <div id="info"></div>
+
+
+		<script type="module">
+
+			import * as THREE from '../three.js-master/build/three.module.js';
+
+			import Stats from '../three.js-master/examples/jsm/libs/stats.module.js';
+
+			import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
+			import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
+
+      import { MTLLoader } from '../three.js-master/examples/jsm/loaders/MTLLoader.js';
+      import { OBJLoader } from '../three.js-master/examples/jsm/loaders/OBJLoader.js';
+
+			let camera, scene, renderer, stats;
+
+			const clock = new THREE.Clock();
+
+			let mixer;
+      let shrekGroup;
+      let shrekPosition;
+			let Rshrek, Rmissile;
+			let Opos;
+
+			init();
+			//animate();
+
+			function init() {
+
+				const container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 4000 );
+				camera.position.set( 100, 800, -200 );
+
+				Opos = 1500;
+				camera.position.y += Opos;
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xa0a0a0 );
+				scene.fog = new THREE.Fog( 0xa0a0a0, 1000, 1500 );
+
+				const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+				hemiLight.position.set( 0, 200, 0 );
+				scene.add( hemiLight );
+
+				const dirLight = new THREE.DirectionalLight( 0xffffff );
+				dirLight.position.set( 0, 200, 100 );
+				dirLight.castShadow = true;
+				dirLight.shadow.camera.top = 180;
+				dirLight.shadow.camera.bottom = - 100;
+				dirLight.shadow.camera.left = - 120;
+				dirLight.shadow.camera.right = 120;
+				scene.add( dirLight );
+
+				// scene.add( new THREE.CameraHelper( dirLight.shadow.camera ) );
+
+				// ground
+				const mesh = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+				mesh.rotation.x = - Math.PI / 2;
+				mesh.receiveShadow = true;
+				scene.add( mesh );
+
+				const grid = new THREE.GridHelper( 2000, 20, 0x000000, 0x000000 );
+				grid.material.opacity = 0.2;
+				grid.material.transparent = true;
+				scene.add( grid );
+
+        shrekGroup = new THREE.Group();
+        shrekPosition = 100;
+
+				// model shrek
+				const loader = new FBXLoader();
+				loader.load( 'models/shrekPose.fbx', function ( shrek ) {
+
+					mixer = new THREE.AnimationMixer( shrek );
+					Rshrek = shrek;
+
+          shrek.position.y = Opos + shrekPosition;
+          shrek.scale.set(7, 7, 7);
+
+					shrek.rotation.x = 1;
+
+					const action = mixer.clipAction( shrek.animations[ 0 ] );
+					action.play();
+
+					shrek.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					//shrekGroup.add( shrek );
+					scene.add( shrek );
+					//Rshrek = shrek;
+				} );
+
+        //model fusé
+
+        const missileLoader = new FBXLoader();
+				missileLoader.load( 'models/missile.fbx', function ( missile ) {
+
+					//mixer = new THREE.AnimationMixer( missile );
+					//Rmissile = missile;
+
+          missile.position.y =  Opos + shrekPosition-30;
+          missile.scale.set(0.3, 0.3, 0.3);
+
+					missile.rotation.x = 1;
+
+					//const action = mixer.clipAction( missile.animations[ 0 ] );
+					//action.play();
+
+					missile.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					//shrekGroup.add( missile );
+					scene.add( missile );
+					Rmissile = missile;
+				} );
+        //shrekGroup.rotation.x = 1;
+
+        //scene.add( shrekGroup );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true;
+				container.appendChild( renderer.domElement );
+
+				const controls = new OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 100, 0 );
+				controls.update();
+
+				window.addEventListener( 'resize', onWindowResize );
+
+				// stats
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+        buildMap();
+
+				animate();
+			}
+
+      function buildMap() {
+				new MTLLoader()
+					.setPath( 'models/maps/' )
+					.load( 'Planet_Destroyed.mtl', function ( materials ) {
+
+				materials.preload();
+
+				new OBJLoader()
+					.setMaterials( materials )
+					.setPath( 'models/maps/' )
+					.load( 'Planet_Destroyed.obj', function ( planet ) {
+						scene.add( planet );
+						planet.scale.set(10,10,10);
+
+						planet.traverse( function ( child ) {
+							if ( child.isMesh ) {
+								child.castShadow = true;
+								child.receiveShadow = true;
+							}
+						});
+
+					});
+				} );
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				const delta = clock.getDelta();
+
+				if ( mixer ) mixer.update( delta );
+
+				Rshrek.position.y -= 2;
+				Rmissile.position.y -= 2;
+				camera.position.y -= 2;
+
+				renderer.render( scene, camera );
+
+				stats.update();
+
+			}
+
+
+
+		</script>
+
+	</body>
+</html>
