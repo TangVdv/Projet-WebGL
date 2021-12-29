@@ -1,0 +1,834 @@
+newmtl Modelpart1-Br Ground.material01_Material001
+Ks 1 1 1
+map_Kd to_build00h_sh.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Br Ground_Material002
+Ks 1 1 1
+map_Kd to_brground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Building P.material01_Material003
+Ks 1 1 1
+map_Kd to_build02h_g.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Building P.material02_Material004
+Ks 1 1 1
+map_Kd to_build03h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Building P.material03_Material005
+Ks 1 1 1
+map_Kd to_build03h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Building P_Material006
+Ks 1 1 1
+map_Kd to_build04h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings A.material01_Material007
+Ks 1 1 1
+map_Kd to_build01.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings A_Material008
+Ks 1 1 1
+map_Kd to_build01.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings B_Material009
+Ks 1 1 1
+map_Kd to_build01h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings C.material01_Material010
+Ks 1 1 1
+map_Kd to_build02_far.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings C.material02_Material011
+Ks 1 1 1
+map_Kd to_build02.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings C.material03_Material012
+Ks 1 1 1
+map_Kd to_build02.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings C.material04_Material013
+Ks 1 1 1
+map_Kd to_build02.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings C_Material014
+Ks 1 1 1
+map_Kd to_build02.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings D_Material015
+Ks 1 1 1
+map_Kd to_build02h_g.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings E_Material016
+Ks 1 1 1
+map_Kd to_build02h_g.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings F.material01_Material017
+Ks 1 1 1
+map_Kd to_build08.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings F.material02_Material018
+Ks 1 1 1
+map_Kd to_build03.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings F_Material019
+Ks 1 1 1
+map_Kd to_build03.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings G.material01_Material020
+Ks 1 1 1
+map_Kd to_build08.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings G_Material021
+Ks 1 1 1
+map_Kd to_build04_far.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings H.material01_Material022
+Ks 1 1 1
+map_Kd to_build01.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings H_Material023
+Ks 1 1 1
+map_Kd to_build01.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings I.material01_Material024
+Ks 1 1 1
+map_Kd to_build06_b.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings I.material02_Material025
+Ks 1 1 1
+map_Kd to_build06.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings I.material03_Material026
+Ks 1 1 1
+map_Kd to_build06_b.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings I.material04_Material027
+Ks 1 1 1
+map_Kd to_build06_b.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings I.material05_Material028
+Ks 1 1 1
+map_Kd to_build06_b.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings I.material06_Material029
+Ks 1 1 1
+map_Kd to_build06.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings I.material07_Material030
+Ks 1 1 1
+map_Kd to_build06.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings I_Material031
+Ks 1 1 1
+map_Kd to_build06_b.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings J_Material032
+Ks 1 1 1
+map_Kd to_build06_b.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings K_Material033
+Ks 1 1 1
+map_Kd to_build06_b.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings L.material01_Material034
+Ks 1 1 1
+map_Kd to_build07_far.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings L_Material035
+Ks 1 1 1
+map_Kd to_build03.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings M.material01_Material036
+Ks 1 1 1
+map_Kd to_build04_far.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings M.material02_Material037
+Ks 1 1 1
+map_Kd to_build03.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings M.material03_Material038
+Ks 1 1 1
+map_Kd to_build04_far.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings M_Material039
+Ks 1 1 1
+map_Kd to_build04_far.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings N_Material040
+Ks 1 1 1
+map_Kd to_build04_far.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings O.material01_Material041
+Ks 1 1 1
+map_Kd to_build09.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings O_Material042
+Ks 1 1 1
+map_Kd to_build09.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings P.material01_Material043
+Ks 1 1 1
+map_Kd to_build02h_g.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings P.material02_Material044
+Ks 1 1 1
+map_Kd to_build03h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings P.material03_Material045
+Ks 1 1 1
+map_Kd to_build02h_g.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings P_Material046
+Ks 1 1 1
+map_Kd to_build03h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings Q.material01_Material047
+Ks 1 1 1
+map_Kd to_build04h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Buildings Q_Material048
+Ks 1 1 1
+map_Kd to_build01h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Far Ground_Material049
+Ks 1 1 1
+map_Kd to_farground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Ground Road.material01_Material050
+Ks 1 1 1
+map_Kd to_plground_crosswalk.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Ground Road.material02_Material051
+Ks 1 1 1
+map_Kd to_plground_oneway.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Ground Road_Material052
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Ground Sidewack.material01_Material053
+Ks 1 1 1
+map_Kd to_ground_sidewalk.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Ground Sidewack_Material054
+Ks 1 1 1
+map_Kd to_ground_sidewalk.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Light_Material055
+Ks 1 1 1
+map_Kd to_plglass_mask.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Near Ground_Material056
+Ks 1 1 1
+map_Kd to_nearground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Plam_Material057
+Ks 1 1 1
+map_Kd to_palm.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Pod A_Material058
+Ks 1 1 1
+map_Kd to_pot.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Pod B_Material059
+Ks 1 1 1
+map_Kd to_pot.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road A.material02_Material060
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road A_Material061
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road B.material02_Material062
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road B_Material063
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road C.material01_Material064
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road C.material02_Material065
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material01_Material066
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material02_Material067
+Ks 1 1 1
+map_Kd to_plflame_b.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material03_Material068
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material04_Material069
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road D.material05_Material070
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material06_Material071
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material07_Material072
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material08_Material073
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material09_Material074
+Ks 1 1 1
+map_Kd to_brground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material10_Material075
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material13_Material076
+Ks 1 1 1
+map_Kd to_brground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road D.material14_Material077
+Ks 1 1 1
+map_Kd to_plglass_clack.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road D.material15_Material078
+Ks 1 1 1
+map_Kd to_brground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road E.material01_Material079
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road E_Material080
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road F.material02_Material081
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road F.material03_Material082
+Ks 1 1 1
+map_Kd to_plflame_b.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road F.material04_Material083
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road F.material05_Material084
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road F_Material085
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road G.material02_Material086
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road G_Material087
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road H.material02_Material088
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road H_Material089
+Ks 1 1 1
+map_Kd to_PLFlame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road I.material01_Material090
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road I.material02_Material091
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road J.material02_Material092
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road J_Material093
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road K.material01_Material094
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road K.material02_Material095
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road K_Material096
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road L_Material097
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road M.material01_Material098
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road M.material02_Material099
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road M_Material100
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road N.material02_Material101
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road N.material03_Material102
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road N.material04_Material103
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road N.material05_Material104
+Ks 1 1 1
+map_Kd to_plflame.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road N.material06_Material105
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road N.material07_Material106
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road N.material08_Material107
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road N_Material108
+Ks 1 1 1
+map_Kd to_plground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road P.material01_Material109
+Ks 1 1 1
+map_Kd to_plglass_break01.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Road P_Material110
+Ks 1 1 1
+map_Kd to_plflame_04.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Sky_Material111
+Ks 1 1 1
+map_Kd to_sky_mountain.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tower A_Material112
+Ks 1 1 1
+map_Kd to_tower01h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tower C_Material113
+Ks 1 1 1
+map_Kd to_tower01_far.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tower D_Material114
+Ks 1 1 1
+map_Kd to_tower01h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tower E_Material115
+Ks 1 1 1
+map_Kd to_tower02h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tower F_Material116
+Ks 1 1 1
+map_Kd to_tower02h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tower G_Material117
+Ks 1 1 1
+map_Kd to_tower02h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tower I_Material118
+Ks 1 1 1
+map_Kd to_tower02h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tower J_Material119
+Ks 1 1 1
+map_Kd to_tower02h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tower K.material01_Material120
+Ks 1 1 1
+map_Kd to_tower02h.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tower K_Material121
+Ks 1 1 1
+map_Kd to_tower02_far.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Tree_Material122
+Ks 1 1 1
+map_Kd to_nearground.png
+cm none
+opaque yes
+
+newmtl Modelpart1-Building Sky_Material123
+Ks 1 1 1
+map_Kd to_build_far.png
+cm none
+opaque no
+
+newmtl Modelpart1-Cloud.material01_Material124
+Ks 1 1 1
+map_Kd to_cloud_ref01.png
+cm none
+opaque no
+
+newmtl Modelpart1-Cloud_Material125
+Ks 1 1 1
+map_Kd to_sky_cloud02.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road A.material01_Material126
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road B.material01_Material127
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road C_Material128
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road D.material11_Material129
+Ks 1 1 1
+map_Kd to_plglass_break.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road D.material12_Material130
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road D_Material131
+Ks 1 1 1
+map_Kd to_plglass_break.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road E.material02_Material132
+Ks 1 1 1
+map_Kd to_plglass_02.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road F.material01_Material133
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road G.material01_Material134
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road H.material01_Material135
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road I_Material136
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road J.material01_Material137
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road K.material03_Material138
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
+newmtl Modelpart1-Road N.material01_Material139
+Ks 1 1 1
+map_Kd to_plglass.png
+cm none
+opaque no
+
