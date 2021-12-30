@@ -22,6 +22,7 @@
 
       import { MTLLoader } from '../three.js-master/examples/jsm/loaders/MTLLoader.js';
       import { OBJLoader } from '../three.js-master/examples/jsm/loaders/OBJLoader.js';
+			import { GLTFLoader } from '../three.js-master/examples/jsm/loaders/GLTFLoader.js';
 
 			let camera, scene, renderer, stats;
 
@@ -41,7 +42,7 @@
 				const container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 4000 );
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 50000 );
 				camera.position.set( 100, 800, -200 );
 
 				Opos = 1500;
@@ -49,13 +50,13 @@
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xa0a0a0 );
-				scene.fog = new THREE.Fog( 0xa0a0a0, 1000, 1500 );
+				//scene.fog = new THREE.Fog( 0xa0a0a0, 1000, 1500 );
 
 				const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
 				hemiLight.position.set( 0, 200, 0 );
 				scene.add( hemiLight );
 
-				const dirLight = new THREE.DirectionalLight( 0xffffff );
+/*				const dirLight = new THREE.DirectionalLight( 0xffffff );
 				dirLight.position.set( 0, 200, 100 );
 				dirLight.castShadow = true;
 				dirLight.shadow.camera.top = 180;
@@ -63,6 +64,13 @@
 				dirLight.shadow.camera.left = - 120;
 				dirLight.shadow.camera.right = 120;
 				scene.add( dirLight );
+*/
+				const light = new THREE.PointLight( 0xffffff, .33, 10000 );
+				light.position.set( 1000, 2000, 1000 );
+				light.castShadow = true;
+				light.shadow.mapSize.width = 2048; //Qualité de l'ombre en largeur
+				light.shadow.mapSize.height = 2048; //Qualité de l'ombre en hauteur
+				scene.add( light );
 
 				// scene.add( new THREE.CameraHelper( dirLight.shadow.camera ) );
 
@@ -75,7 +83,7 @@
 				const grid = new THREE.GridHelper( 2000, 20, 0x000000, 0x000000 );
 				grid.material.opacity = 0.2;
 				grid.material.transparent = true;
-				scene.add( grid );
+				//scene.add( grid );
 
         shrekGroup = new THREE.Group();
         shrekPosition = 100;
@@ -163,6 +171,11 @@
 				container.appendChild( stats.dom );
 
         buildMap();
+				//buildCityClean();
+				//buildCityDestroyed();
+
+				createKenshiro();
+				createSaitama();
 
 				animate();
 			}
@@ -192,6 +205,111 @@
 				} );
 			}
 
+			function createKenshiro() {
+				let loader = new GLTFLoader();
+
+				loader.load('models/kenshiro_final.glb', function ( kenshiro ) {
+
+						scene.add( kenshiro.scene );
+						kenshiro.scene.scale.set(5,5,5);
+
+						kenshiro.scene.traverse( function ( child ) {
+							if ( child.isMesh ) {
+								child.castShadow = true;
+								child.receiveShadow = true;
+							}
+						});
+
+						//gltf.animations; // Array<THREE.AnimationClip>
+						gltf.scene; // THREE.Group
+						gltf.scenes; // Array<THREE.Group>
+						gltf.cameras; // Array<THREE.Camera>
+						gltf.asset; // Object
+
+					});
+				}
+
+				function createSaitama() {
+					let loader = new GLTFLoader();
+
+					loader.load('models/test/Saitama_30.glb', function ( saitama ) {
+							let mixer = new THREE.AnimationMixer(saitama);
+
+							const actionSaitama = mixer.clipAction(saitama.animations[0]);
+			        actionSaitama.play();
+
+							scene.add( saitama.scene );
+							saitama.scene.scale.set(1.4,1.4,1.4);
+							saitama.scene.position.set(0, 0, 100);
+							saitama.scene.rotation.y = Math.PI;
+
+							saitama.scene.traverse( function ( child ) {
+								if ( child.isMesh ) {
+									child.castShadow = true;
+									child.receiveShadow = true;
+								}
+							});
+
+							gltf.animations; // Array<THREE.AnimationClip>
+							gltf.scene; // THREE.Group
+							gltf.scenes; // Array<THREE.Group>
+							gltf.cameras; // Array<THREE.Camera>
+							gltf.asset; // Object
+
+						});
+				}
+
+				function buildCityClean() {
+					let loader = new GLTFLoader();
+
+					loader.load('models/maps/City_clean/City_clean.glb', function ( city_clean ) {
+
+							scene.add( city_clean.scene );
+							city_clean.scene.scale.set(5,5,5);
+
+							city_clean.scene.traverse( function ( child ) {
+								if ( child.isMesh ) {
+									child.castShadow = true;
+									child.receiveShadow = true;
+								}
+							});
+
+							//gltf.animations; // Array<THREE.AnimationClip>
+							gltf.scene; // THREE.Group
+							gltf.scenes; // Array<THREE.Group>
+							gltf.cameras; // Array<THREE.Camera>
+							gltf.asset; // Object
+
+						});
+					}
+
+					function buildCityDestroyed() {
+						let loader = new GLTFLoader();
+
+						loader.load('models/maps/City_destroyed/City_destroyed.gltf', function ( city_destroyed ) {
+
+								scene.add( city_destroyed.scene );
+								city_destroyed.scene.scale.set(50,50,50);
+
+								city_destroyed.scene.traverse( function ( child ) {
+									if ( child.isMesh ) {
+										child.castShadow = true;
+										child.receiveShadow = true;
+									}
+								});
+
+								//gltf.animations; // Array<THREE.AnimationClip>
+								gltf.scene; // THREE.Group
+								gltf.scenes; // Array<THREE.Group>
+								gltf.cameras; // Array<THREE.Camera>
+								gltf.asset; // Object
+
+							});
+						}
+
+
+
+
 			function onWindowResize() {
 
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -213,7 +331,7 @@
 
 				Rshrek.position.y -= 2;
 				Rmissile.position.y -= 2;
-				camera.position.y -= 2;
+				//camera.position.y -= 2;
 
 				renderer.render( scene, camera );
 
