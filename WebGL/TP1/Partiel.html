@@ -8,6 +8,12 @@
 	</head>
 
 	<body>
+
+		<video id="video" width="1600" style="display:none" muted>
+  		<source src="video/bomb.mp4" type="video/mp4">
+				Your browser does not support the video tag.
+		</video>
+
     <div id="info"></div>
 
 
@@ -29,10 +35,10 @@
 			const clock = new THREE.Clock();
 
 			let mixer;
-      let shrekGroup;
       let shrekPosition;
 			let Rshrek, Rmissile;
 			let Opos;
+			let video;
 
 			init();
 			//animate();
@@ -41,6 +47,9 @@
 
 				const container = document.createElement( 'div' );
 				document.body.appendChild( container );
+
+				//Video setup
+				video = document.getElementById( 'video' );
 
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 50000 );
 				camera.position.set( 100, 800, -200 );
@@ -85,8 +94,41 @@
 				grid.material.transparent = true;
 				//scene.add( grid );
 
-        shrekGroup = new THREE.Group();
         shrekPosition = 100;
+
+				createShrek();
+
+        createRocket();
+
+
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true;
+				container.appendChild( renderer.domElement );
+
+				const controls = new OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 100, 0 );
+				controls.update();
+
+				window.addEventListener( 'resize', onWindowResize );
+
+				// stats
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+        //buildMap();
+				//buildCityClean();
+				buildCityDestroyed();
+
+				createKenshiro();
+				createSaitama();
+
+				animate();
+			}
+
+			function createShrek(){
 
 				// model shrek
 				const loader = new FBXLoader();
@@ -114,12 +156,13 @@
 
 					} );
 
-					//shrekGroup.add( shrek );
-					scene.add( shrek );
-					//Rshrek = shrek;
-				} );
 
-        //model fusé
+					scene.add( shrek );
+				} );
+			}
+
+			function createRocket(){
+				//model fusé
 
         const missileLoader = new FBXLoader();
 				missileLoader.load( 'models/missile.fbx', function ( missile ) {
@@ -146,38 +189,10 @@
 
 					} );
 
-					//shrekGroup.add( missile );
+
 					scene.add( missile );
 					Rmissile = missile;
 				} );
-        //shrekGroup.rotation.x = 1;
-
-        //scene.add( shrekGroup );
-
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.shadowMap.enabled = true;
-				container.appendChild( renderer.domElement );
-
-				const controls = new OrbitControls( camera, renderer.domElement );
-				controls.target.set( 0, 100, 0 );
-				controls.update();
-
-				window.addEventListener( 'resize', onWindowResize );
-
-				// stats
-				stats = new Stats();
-				container.appendChild( stats.dom );
-
-        buildMap();
-				//buildCityClean();
-				//buildCityDestroyed();
-
-				createKenshiro();
-				createSaitama();
-
-				animate();
 			}
 
       function buildMap() {
@@ -307,7 +322,19 @@
 							});
 						}
 
+			function startVideo(){
+				video.style.display = 'block';
+				video.play();
+				setTimeout(
+					stopVideo(),
+					7000
+				);
+			}
 
+			function stopVideo(){
+				video.style.display='none';
+				video.pause;
+			}
 
 
 			function onWindowResize() {
@@ -332,6 +359,10 @@
 				Rshrek.position.y -= 2;
 				Rmissile.position.y -= 2;
 				//camera.position.y -= 2;
+
+				if(Rshrek.position.y < 100){
+					startVideo();
+				}
 
 				renderer.render( scene, camera );
 
