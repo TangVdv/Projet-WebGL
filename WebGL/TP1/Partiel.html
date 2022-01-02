@@ -23,7 +23,10 @@
 
 			import Stats from '../three.js-master/examples/jsm/libs/stats.module.js';
 
+			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
+
 			import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
+			import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
 			import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
 
       import { MTLLoader } from '../three.js-master/examples/jsm/loaders/MTLLoader.js';
@@ -31,10 +34,13 @@
 			import { GLTFLoader } from '../three.js-master/examples/jsm/loaders/GLTFLoader.js';
 
 			let camera, scene, renderer, stats;
+			let gui, controls, controls_2;
+			//let gui;
 
 			const clock = new THREE.Clock();
 
 			let mixer;
+			let fog = 0;
       let shrekPosition;
 			let Rshrek, Rmissile;
 			let Opos;
@@ -62,7 +68,8 @@
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xa0a0a0 );
-				//scene.fog = new THREE.Fog( 0xa0a0a0, 1000, 1500 );
+				scene.fog = new THREE.Fog( 0xa0a0a0, 1200, 1500 );
+				//1000 1500
 
 				const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
 				hemiLight.position.set( 0, 200, 0 );
@@ -111,10 +118,6 @@
 				renderer.shadowMap.enabled = true;
 				container.appendChild( renderer.domElement );
 
-				const controls = new OrbitControls( camera, renderer.domElement );
-				controls.target.set( 0, 100, 0 );
-				controls.update();
-
 				window.addEventListener( 'resize', onWindowResize );
 
 				// stats
@@ -125,10 +128,71 @@
 				//buildCityClean();
 				buildCityDestroyed();
 
+				setupControls();
+				controls_2.enabled = false;
+
+
+				buildGui();
+
 				createKenshiro();
 				//createSaitama();
 
 				animate();
+			}
+
+			function buildGui(){
+
+				const params = {
+					'first person controls': 'Off',
+					'orbit controls': 'On',
+					'fog': fog,
+					'fog_color': scene.fog.color.getHex()
+				};
+
+				gui = new GUI();
+
+				const folderCamera = gui.addFolder('Camera');
+				folderCamera.add( params, 'first person controls', [ 'Off', 'On' ] ).onChange( function ( params ) {
+					if (params == 'On') {
+						controls_2.enabled = true;
+					}
+					if (params == 'Off') {
+						controls_2.enabled = false;
+					}
+				} );
+				folderCamera.add( params, 'orbit controls', [ 'On', 'Off' ] ).onChange( function ( params ) {
+					if (params == 'On') {
+						controls.enabled = true;
+					}
+					if (params == 'Off') {
+						controls.enabled = false;
+					}
+				} );
+
+				const folderFog = gui.addFolder('Fog');
+				folderFog.add( params, 'fog', 0, .0007).step(.00001).onChange( function ( val ) {
+						scene.fog.density = val;
+				} );
+				folderFog.addColor( params, 'fog_color').onChange( function ( val ) {
+						scene.fog.color.setHex(val)
+				} );
+
+			}
+
+			function setupControls(){
+				// CONTROL
+
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.addEventListener( 'change', renderer );
+				controls.minDistance = 100;
+				controls.maxDistance = 20000;
+				controls.enablePan = false;
+				controls.enabled = true;
+
+				controls_2 = new FirstPersonControls(camera, renderer.domElement);
+        controls_2.movementSpeed = 1000;
+        controls_2.lookSpeed = 0.1;
+        controls_2.lookVertical = true;
 			}
 
 			function createShrek(){
@@ -327,7 +391,7 @@
 
 			function startVideo(){
 				Vstatus = 1;
-				console.log("ok");
+				//console.log("ok");
 				video.style.display = 'block';
 				video.play();
 				setTimeout(
@@ -360,6 +424,7 @@
 				const delta = clock.getDelta();
 
 				if ( mixer ) mixer.update( delta );
+				if (controls_2) controls_2.update(delta);
 
 				Rshrek.position.y -= 2;
 				Rmissile.position.y -= 2;
