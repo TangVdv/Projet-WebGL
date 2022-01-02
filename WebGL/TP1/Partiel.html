@@ -38,7 +38,7 @@
       let shrekPosition;
 			let Rshrek, Rmissile;
 			let Opos;
-			let video;
+			let video, Vstatus;
 
 			init();
 			//animate();
@@ -50,6 +50,9 @@
 
 				//Video setup
 				video = document.getElementById( 'video' );
+				Vstatus = 0;
+				//video.play();
+
 
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 50000 );
 				camera.position.set( 100, 800, -200 );
@@ -123,7 +126,7 @@
 				buildCityDestroyed();
 
 				createKenshiro();
-				createSaitama();
+				//createSaitama();
 
 				animate();
 			}
@@ -323,17 +326,19 @@
 						}
 
 			function startVideo(){
+				Vstatus = 1;
+				console.log("ok");
 				video.style.display = 'block';
 				video.play();
 				setTimeout(
-					stopVideo(),
+					stopVideo,
 					7000
 				);
 			}
 
 			function stopVideo(){
 				video.style.display='none';
-				video.pause;
+				//video.pause;
 			}
 
 
@@ -360,8 +365,11 @@
 				Rmissile.position.y -= 2;
 				//camera.position.y -= 2;
 
-				if(Rshrek.position.y < 100){
-					startVideo();
+
+				if(Vstatus == 0){ // Has video already been played?
+					if(Rshrek.position.y < 100){
+						startVideo();
+					}
 				}
 
 				renderer.render( scene, camera );
