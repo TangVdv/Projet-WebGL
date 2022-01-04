@@ -5,594 +5,150 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="main.css">
-		<link type="text/css" rel="stylesheet" href="bootstrap.min.css">
 	</head>
 	<body class="bg-dark">
-		<div id = "overlay" class="d-flex justify-content-center">
-			<img src="ae86.jpg" style="width: 100%"/>
-			<button class="btn-success btn-lg" id = "startButton">Start</button>
-		</div>
-		<!--
-		<audio id="TardisAudioMp3" loop preload="auto" style="display: none">
-			<source src="Music/Doctor Who Saison 13 Flux Générique.mp3" type="audio/mpeg">
-		</audio>
-		<audio id="goku" loop preload="auto" style="display: none">
-			<source src="Music/goku.mp3" type="audio/mpeg">
-		</audio>
-		<audio id="ambientsound" loop preload="auto" style="display: none">
-			<source src="Music/music.mp3" type="audio/mpeg">
-		</audio>
-	-->
+
 <div id="container"></div>
 		<script type="module">
 
 			import * as THREE from '../three.js-master/build/three.module.js';
 
+			import { Octree } from '../three.js-master/examples/jsm/math/Octree.js';
+			import { Capsule } from '../three.js-master/examples/jsm/math/Capsule.js';
 			import Stats from '../three.js-master/examples/jsm/libs/stats.module.js';
-
-			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
-
-			import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
-
-			import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
-
-			import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
-
+			import { GLTFLoader } from '../three.js-master/examples/jsm/loaders/GLTFLoader.js';
 			import { OBJLoader } from '../three.js-master/examples/jsm/loaders/OBJLoader.js';
-
 			import { MTLLoader } from '../three.js-master/examples/jsm/loaders/MTLLoader.js';
-
-			import { MMDLoader } from '../three.js-master/examples/jsm/loaders/MMDLoader.js';
-
-			import { MMDAnimationHelper } from '../three.js-master/examples/jsm/animation/MMDAnimationHelper.js';
-
-			let pillar_ext, pillar_int, cube_ext, cube_int, group, geometry, multiplier = 1;	//Stonehenge
-			let scene, renderer, gui, stats, gpuPanel; // scene
-			let light, hemiLight, fog = 0; // light
-      let Cgroup, Cparent, car;
-			let controls, controls_2; // camera
-			let soundTardis, soundHuman, soundAmbient, vroomSound; // Sound
-			let runAction;
-			let loader;
-
-      let mixerHuman, mixerShrek;
 
 			const clock = new THREE.Clock();
 
-			const startButton = document.getElementById( 'startButton' );
-			startButton.addEventListener( 'click', init );
+			const scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0x88ccff );
 
-			let TardisGroup = new THREE.Group();
+			const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+			camera.rotation.order = 'YXZ';
 
-			let container = document.getElementById("container");
-			document.body.appendChild(container);
+			const ambientlight = new THREE.AmbientLight( 0x6688cc );
+			scene.add( ambientlight );
 
-			const camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
-			camera.position.set( 0, 1500 * multiplier, 3000 * multiplier );
-			camera.rotation.x = -25 * Math.PI / 180;
+			const fillLight1 = new THREE.DirectionalLight( 0xff9999, 0.5 );
+			fillLight1.position.set( - 1, 1, 2 );
+			scene.add( fillLight1 );
 
-			const listener = new THREE.AudioListener();
-			camera.add( listener );
+			const fillLight2 = new THREE.DirectionalLight( 0x8888ff, 0.2 );
+			fillLight2.position.set( 0, - 1, 0 );
+			scene.add( fillLight2 );
 
-			const sound = new THREE.Audio( listener );
+			const directionalLight = new THREE.DirectionalLight( 0xffffaa, 1.2 );
+			directionalLight.position.set( - 5, 25, - 1 );
+			directionalLight.castShadow = true;
+			directionalLight.shadow.camera.near = 0.01;
+			directionalLight.shadow.camera.far = 500;
+			directionalLight.shadow.camera.right = 30;
+			directionalLight.shadow.camera.left = - 30;
+			directionalLight.shadow.camera.top	= 30;
+			directionalLight.shadow.camera.bottom = - 30;
+			directionalLight.shadow.mapSize.width = 1024;
+			directionalLight.shadow.mapSize.height = 1024;
+			directionalLight.shadow.radius = 4;
+			directionalLight.shadow.bias = - 0.00006;
+			scene.add( directionalLight );
 
-			const analyser = new THREE.AudioAnalyser( sound, 32 );
+			const renderer = new THREE.WebGLRenderer( { antialias: true } );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.VSMShadowMap;
 
-			const data = analyser.getAverageFrequency();
-      // STONEHENGE
+			const container = document.getElementById( 'container' );
 
-			function set_material(UV_x, UV_y){
+			container.appendChild( renderer.domElement );
 
-				stats = new Stats();
-				container.appendChild(stats.dom);
-				//Texture
-				const rockTexture = new THREE.TextureLoader().load('textures/roche.jpg');
+			const stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
 
-				//Texture scale
-				rockTexture.wrapS = THREE.RepeatWrapping; // Texture is wrapped horizontally
-				rockTexture.wrapT = THREE.RepeatWrapping; // Texture is wrapped vertically
-				rockTexture.repeat.set( UV_x, UV_y ); // Number of times the texture is repeated
+			container.appendChild( stats.domElement );
 
-				//Material
-				const material = new THREE.MeshPhongMaterial( { map: rockTexture } );
-				return material;
+			const GRAVITY = 30;
+
+			const NUM_SPHERES = 100;
+			const SPHERE_RADIUS = 0.2;
+
+			const STEPS_PER_FRAME = 5;
+
+			const sphereGeometry = new THREE.SphereGeometry( SPHERE_RADIUS, 32, 32 );
+			const sphereMaterial = new THREE.MeshStandardMaterial( { color: 0x888855, roughness: 0.8, metalness: 0.5 } );
+
+			const spheres = [];
+			let sphereIdx = 0;
+
+			for ( let i = 0; i < NUM_SPHERES; i ++ ) {
+
+				const sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+				sphere.castShadow = true;
+				sphere.receiveShadow = true;
+
+				scene.add( sphere );
+
+				spheres.push( { mesh: sphere, collider: new THREE.Sphere( new THREE.Vector3( 0, - 100, 0 ), SPHERE_RADIUS ), velocity: new THREE.Vector3() } );
+
 			}
 
-			function exterior_part(location, rotation){
-				geometry = new THREE.BoxGeometry( 100, 200, 50 );
-				//  / pillar part \
-				group = new THREE.Group();
-				//Create mesh
-				pillar_ext = new THREE.Mesh( geometry, set_material(2, 4) );
-				//Set position to mesh
-				pillar_ext.position.z = location;
-				//Add mesh in group
-				pillar_ext.castShadow = true;
-				group.add( pillar_ext );
+			const worldOctree = new Octree();
 
-				//  / roof part \
+			const playerCollider = new Capsule( new THREE.Vector3( 0, 0.35, 0 ), new THREE.Vector3( 0, 1, 0 ), 0.35 );
 
-				//Create mesh
-				pillar_ext = new THREE.Mesh( new THREE.BoxGeometry( location / 5, 50, 100 ), set_material(4 * multiplier,2) ); //Change la taille en x en rapport à la distance où il se trouve. Ici, on  divise par 5 car si on laissait la location de base, le toit serait 5 fois plus grand de base.
-				//Set position to mesh
-				pillar_ext.position.x = location / 10;
-				pillar_ext.position.z = location;
-				pillar_ext.position.y = 125;
-				pillar_ext.rotation.y = 5 * Math.PI / 180;
-				pillar_ext.castShadow = true;
+			const playerVelocity = new THREE.Vector3();
+			const playerDirection = new THREE.Vector3();
 
-				//Add mesh in group
-				group.add(pillar_ext);
+			let playerOnFloor = false;
+			let mouseTime = 0;
 
-				//   / Cube part \
+			const keyStates = {};
 
-				//Create mesh
-				cube_ext = new THREE.Mesh( new THREE.BoxGeometry( 50, 20, 20 ), set_material(2,1) );
-				//Set position to mesh
-				cube_ext.position.z = location / 1.25;
-				cube_ext.position.y = -90;
-				cube_ext.castShadow = true;
+			const vector1 = new THREE.Vector3();
+			const vector2 = new THREE.Vector3();
+			const vector3 = new THREE.Vector3();
 
-				//Add mesh in group
-				group.add( cube_ext );
+			document.addEventListener( 'keydown', ( event ) => {
 
-				//Set rotation to group
-				group.rotation.y = rotation * Math.PI / 180;
-				//add group to scene
-				parent.add(group);
-			}
+				keyStates[ event.code ] = true;
 
-			function interior_part(location, rotation){
-				geometry = new THREE.BoxGeometry( 100, 200, 50 );
-				group = new THREE.Group();
-				let x= -100;
-				for (let i = 0; i < 2; i++) {
-					//Create mesh
-					pillar_int = new THREE.Mesh( new THREE.BoxGeometry( 100, 400, 70 ), set_material(2, 8) );
-					//Set position to mesh
-					pillar_int.position.x = x;
-					pillar_int.position.z = location;
-					pillar_int.position.y = 100;
-					pillar_int.castShadow = true;
-					//Add mesh in group
-					group.add( pillar_int );
-					x += 200;
+			} );
+
+			document.addEventListener( 'keyup', ( event ) => {
+
+				keyStates[ event.code ] = false;
+
+			} );
+
+			document.addEventListener( 'mousedown', () => {
+
+				document.body.requestPointerLock();
+
+				mouseTime = performance.now();
+
+			} );
+
+			document.addEventListener( 'mouseup', () => {
+
+				throwBall();
+
+			} );
+
+			document.body.addEventListener( 'mousemove', ( event ) => {
+
+				if ( document.pointerLockElement === document.body ) {
+
+					camera.rotation.y -= event.movementX / 500;
+					camera.rotation.x -= event.movementY / 500;
+
 				}
 
-				//  / roof part \
+			} );
 
-				//Create mesh
-				pillar_int = new THREE.Mesh( new THREE.BoxGeometry( 320, 60, 80 ), set_material(6,2) );
-				//Set position to mesh
-				pillar_int.position.z = location;
-				pillar_int.position.y = 330;
-				pillar_int.castShadow = true;
-				//Add mesh in group
-				group.add(pillar_int);
-
-				//Set rotation to group
-				group.rotation.y = rotation * Math.PI / 180;
-				//add group to scene
-				parent.add(group);
-
-				//    / Cube part \
-
-				x = -125;
-				for (var i = 0; i < 3; i++) {
-					group = new THREE.Group();
-					//Create mesh
-					cube_int = new THREE.Mesh( new THREE.BoxGeometry( 50, 20, 20 ), set_material(2,1) );
-					//Set position to mesh
-					cube_int.position.z = location / 1.25;
-					cube_int.position.y = -90;
-					cube_int.position.x = x;
-					cube_int.castShadow = true;
-					//Add mesh in group
-					group.add( cube_int );
-					//Set rotation to group
-					group.rotation.y = rotation * Math.PI / 180;
-					//add group to scene
-					parent.add(group);
-					x += 125;
-				}
-			}
-
-			function stonehenge(){
-				while(parent.children.length > 0){
-				    parent.remove(parent.children[0]);
-				}
-				let rotation_value = 0;
-
-				for (let i = 0; i < 30; i++) {
-					exterior_part(1000 * multiplier, rotation_value);
-					rotation_value += 12;
-				}
-
-				rotation_value = 0
-				for (let i = 0; i < 6; i++) {
-					interior_part(500 * multiplier, rotation_value);
-					rotation_value += 60;
-				}
-
-			}
-
-      function CreateCar(){
-				while(Cparent.children.length > 0){
-				    Cparent.remove(Cparent.children[0]);
-				}
-
-				//Car's group
-				Cgroup = new THREE.Group();
-
-				// Car model
-				const Cloader = new FBXLoader();
-				Cloader.load( 'models/trueno_panda_ae86.fbx', function ( car ) {
-					car.traverse( function ( child ) {
-						if ( child.isMesh ) {
-
-							child.castShadow = true;
-							child.receiveShadow = true;
-
-						}
-        	});
-
-
-
-					// song
-
-					vroomSound = new THREE.PositionalAudio(listener);
-					const TruenoPandaAe86Incroyable = new THREE.AudioLoader();
-					TruenoPandaAe86Incroyable.load( 'Music/vroom.mp3', function( carrRr ) {
-						vroomSound.setBuffer( carrRr );
-						vroomSound.setLoop( true );
-						vroomSound.setVolume( 3 );
-						vroomSound.setRefDistance(15);
-						vroomSound.play();
-					});
-
-					car.add(vroomSound);
-
-					Cgroup.add(car);
-					car.rotation.z = 125;
-					car.position.x = 1700 * multiplier;
-
-					Cparent.add(Cgroup);
-					scene.add( Cparent );
-
-				});
-			}
-
-			function tardis(){
-
-				// MODEL
-				const loader = new FBXLoader();
-				loader.load( 'models/fbx/tardis.fbx', function ( tardis ) {
-					tardis.traverse( function ( child ) {
-						if ( child.isMesh ) {
-							let scaleValue = 50;
-							child.scale.set(scaleValue,scaleValue,scaleValue);
-              tardis.position.y = 1500;
-							child.castShadow = true;
-							child.receiveShadow = true;
-
-						}
-					});
-					soundTardis = new THREE.PositionalAudio(listener);
-					const TardisAudio = new THREE.AudioLoader();
-					TardisAudio.load( 'Music/DoctorWho.mp3', function( buffer ) {
-						soundTardis.setBuffer( buffer );
-						soundTardis.setLoop( true );
-						soundTardis.setVolume( 2 );
-						soundTardis.setRefDistance(30);
-						soundTardis.play();
-					});
-					tardis.add(soundTardis);
-					scene.add(TardisGroup);
-          TardisGroup.add(tardis);
-
-				});
-
-
-
-			}
-
-			let Human = new THREE.Group();
-	    function CreateRunHuman() {
-        loader = new FBXLoader();
-        loader.load("models/fbx/Human.fbx", function (objectHuman) {
-          mixerHuman = new THREE.AnimationMixer(objectHuman);
-
-          objectHuman.position.y -= 100;
-          objectHuman.position.x = 140;
-
-	        const actionHuman = mixerHuman.clipAction(objectHuman.animations[0]);
-	        actionHuman.play();
-
-	        objectHuman.traverse(function (child) {
-	            if (child.isMesh) {
-	                child.castShadow = true;
-	                child.receiveShadow = true;
-
-	            }
-			    });
-
-					// song
-
-					soundHuman = new THREE.PositionalAudio(listener);
-					const goku = new THREE.AudioLoader();
-					goku.load( 'Music/goku.mp3', function( buffer ) {
-						soundHuman.setBuffer( buffer );
-						soundHuman.setLoop( true );
-						soundHuman.setVolume( 0.4 );
-						soundHuman.setRefDistance(30);
-						soundHuman.play();
-					});
-
-					objectHuman.add(soundHuman);
-
-					//scene.add(Human);
-					Human.add(objectHuman);
-
-      	});
-
-			}
-
-			function CreateShrek(){
-				loader = new FBXLoader();
-				loader.load("models/shrek.fbx", function (Shrek) {
-					mixerShrek = new THREE.AnimationMixer(Shrek);
-
-					Shrek.scale.set(10, 10, 10);
-					Shrek.position.y = -100;
-
-					const actionShrek = mixerShrek.clipAction(Shrek.animations[0]);
-					actionShrek.play();
-
-					Shrek.traverse(function (child) {
-						if (child.isMesh) {
-								child.castShadow = true;
-								child.receiveShadow = true;
-
-						}
-					});
-					scene.add(Shrek);
-
-				});
-
-			}
-
-			function buildMap() {
-				new MTLLoader()
-					.setPath( 'models/maps/' )
-					.load( 'Planet_Destroyed.mtl', function ( materials ) {
-
-				materials.preload();
-
-				new OBJLoader()
-					.setMaterials( materials )
-					.setPath( 'models/maps/' )
-					.load( 'Planet_Destroyed.obj', function ( planet ) {
-						scene.add( planet );
-						planet.scale.set(10,10,10);
-
-						planet.traverse( function ( child ) {
-							if ( child.isMesh ) {
-								child.castShadow = true;
-								child.receiveShadow = true;
-							}
-						});
-
-					});
-				} );
-			}
-
-			function createKen() {
-				loader = new MMDLoader();
-
-				loader.load('models/Ken/ken.pmx', function ( ken ) {
-						scene.add( ken );
-						ken.scale.set(10,10,10);
-
-						ken.traverse( function ( child ) {
-							if ( child.isMesh ) {
-								child.castShadow = true;
-								child.receiveShadow = true;
-							}
-						});
-					});
-			}
-
-			function init() {
-
-				const overlay = document.getElementById('overlay');
-				overlay.remove();
-
-				scene = new THREE.Scene();
-
-				// MUSIC
-
-
-
-				// FOG
-
-				scene.fog = new THREE.FogExp2(0xaaccff, fog);
-
-				// RENDER
-
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
-				scene.background = new THREE.Color( 0x77b5fe );
-
-				renderer.shadowMap.enabled = true;
-
-				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-				renderer.outputEncoding = THREE.sRGBEncoding;
-				renderer.shadowMap.enabled = true;
-
-				// CONTROL
-
-				controls = new OrbitControls( camera, renderer.domElement );
-				controls.addEventListener( 'change', renderer );
-				controls.minDistance = 100;
-				controls.maxDistance = 20000;
-				controls.enablePan = false;
-				controls.enabled = true;
-
-				controls_2 = new FirstPersonControls(camera, renderer.domElement);
-        controls_2.movementSpeed = 1000;
-        controls_2.lookSpeed = 0.1;
-        controls_2.lookVertical = true;
-
-				// LIGHTS
-
-				// Eclaire toute la scène
-				hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
-				hemiLight.color.setHSL( 0.6, 1, 0.6 ); // Couleur de la lumière
-				hemiLight.position.set( 0, 50, 0 );
-				scene.add( hemiLight );
-
-				// Eclaire le stonehenge et permet de rajouter les ombres
-				light = new THREE.PointLight( 0xffffff, .33, 10000 );
-				light.position.set( 1000, 2000, 1000 );
-				light.castShadow = true;
-				light.shadow.mapSize.width = 2048; //Qualité de l'ombre en largeur
-				light.shadow.mapSize.height = 2048; //Qualité de l'ombre en hauteur
-		    scene.add( light );
-
-				// GROUND
-
-				const floorMat = new THREE.MeshPhongMaterial( { color: 0x333333 } );
-				const floorGeometry = new THREE.BoxGeometry( 20000, 1, 20000 );
-
-				const floorMesh = new THREE.Mesh( floorGeometry, floorMat );
-				floorMesh.position.set( 0, -100, 0 );
-				floorMesh.receiveShadow  = true;
-				//scene.add( floorMesh );
-
-				parent = new THREE.Object3D();
-				scene.add( parent );
-
-				//stonehenge();
-				//tardis();
-
-				//Car's group
-				Cparent = new THREE.Group();
-				//CreateCar();
-
-				render();
-				animate();
-        buildGui();
-				//CreateShrek();
-				//CreateRunHuman();
-				buildMap();
-				createKen();
-
-				window.addEventListener( 'resize', onWindowResize );
-
-				// stats
-				stats = new Stats();
-				container.appendChild( stats.dom );
-			}
-
-			function buildGui() {
-
-				const params = {
-					'multiplier': multiplier,
-					'background color': scene.background.getHex(),
-					'first person controls': 'Off',
-					'orbit controls': 'On',
-					'fog': fog,
-					'fog_color': scene.fog.color.getHex(),
-					'DensityPointLight': 0,
-					'DensityHemiLight': 0
-				};
-
-				const SoundControls = function () {
-
-					//this.master = listener.getMasterVolume();
-					//this.tardis = soundTardis.getVolume();
-					//this.human = soundHuman.getVolume();
-					//this.ambient = sound.getVolume();
-
-				};
-
-				gui = new GUI();
-				const soundControls = new SoundControls();
-
-
-				const folderStonehenge = gui.addFolder('StoneHenge');
-				folderStonehenge.add( params, 'multiplier', 1, 2 ).onChange( function ( val ) {
-					multiplier = val;
-					stonehenge();
-					CreateCar();
-
-				} );
-
-				const folderCamera = gui.addFolder('Camera');
-				folderCamera.add( params, 'first person controls', [ 'Off', 'On' ] ).onChange( function ( params ) {
-					if (params == 'Off') {
-						controls_2.enabled = false;
-					}
-					if (params == 'On') {
-						controls_2.enabled = true;
-					}
-				} );
-				folderCamera.add( params, 'orbit controls', [ 'On', 'Off' ] ).onChange( function ( params ) {
-					if (params == 'On') {
-						controls.enabled = true;
-					}
-					if (params == 'Off') {
-						controls.enabled = false;
-					}
-				} );
-
-
-				const folderFog = gui.addFolder('Fog');
-				folderFog.add( params, 'fog', 0, .0007).step(.00001).onChange( function ( val ) {
-						scene.fog.density = val;
-				} );
-				folderFog.addColor( params, 'fog_color').onChange( function ( val ) {
-						scene.fog.color.setHex(val)
-				} );
-
-				const folderLight = gui.addFolder('Light');
-				folderLight.add( params, 'DensityPointLight', 0, 1 ).step( .001).onChange( function ( val ) {
-					light.intensity = val;
-				} );
-				folderLight.add( params, 'DensityHemiLight', 0, 1 ).step( .001).onChange( function ( val ) {
-					hemiLight.intensity = val;
-				} );
-
-				/*
-				const folderSound = gui.addFolder('Sound');
-				folderSound.add( soundControls, 'Master' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
-					listener.setMasterVolume( soundControls.master );
-				} );
-				folderSound.add( soundControls, 'Tardis' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
-					soundTardis.setVolume( soundControls.tardis );
-				} );
-				folderSound.add( soundControls, 'Human' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
-					soundHuman.setVolume( soundControls.human );
-				} );
-				folderSound.add( soundControls, 'Ambient' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
-					soundAmbient.setVolume( soundControls.ambient );
-				} );
-				*/
-
-				gui.addColor( params, 'background color' ).onChange( function ( val ) {
-
-					scene.background.setHex( val );
-					render();
-
-				} );
-
-
-
-				gui.open();
-
-			}
+			window.addEventListener( 'resize', onWindowResize );
 
 			function onWindowResize() {
 
@@ -603,20 +159,304 @@
 
 			}
 
-			function animate() {
+			function throwBall() {
 
-				requestAnimationFrame( animate );
+				const sphere = spheres[ sphereIdx ];
 
-				const delta = clock.getDelta();
+				camera.getWorldDirection( playerDirection );
 
-				render();
+				sphere.collider.center.copy( playerCollider.end ).addScaledVector( playerDirection, playerCollider.radius * 1.5 );
 
-				//stats.update();
+				// throw the ball with more force if we hold the button longer, and if we move forward
+
+				const impulse = 15 + 30 * ( 1 - Math.exp( ( mouseTime - performance.now() ) * 0.001 ) );
+
+				sphere.velocity.copy( playerDirection ).multiplyScalar( impulse );
+				sphere.velocity.addScaledVector( playerVelocity, 2 );
+
+				sphereIdx = ( sphereIdx + 1 ) % spheres.length;
 
 			}
 
-			function render(){
-				renderer.render( scene, camera,  car );
+			function playerCollisions() {
+
+				const result = worldOctree.capsuleIntersect( playerCollider );
+
+				playerOnFloor = false;
+
+				if ( result ) {
+
+					playerOnFloor = result.normal.y > 0;
+
+					if ( ! playerOnFloor ) {
+
+						playerVelocity.addScaledVector( result.normal, - result.normal.dot( playerVelocity ) );
+
+					}
+
+					playerCollider.translate( result.normal.multiplyScalar( result.depth ) );
+
+				}
+
+			}
+
+			function updatePlayer( deltaTime ) {
+
+				let damping = Math.exp( - 4 * deltaTime ) - 1;
+
+				if ( ! playerOnFloor ) {
+
+					playerVelocity.y -= GRAVITY * deltaTime;
+
+					// small air resistance
+					damping *= 0.1;
+
+				}
+
+				playerVelocity.addScaledVector( playerVelocity, damping );
+
+				const deltaPosition = playerVelocity.clone().multiplyScalar( deltaTime );
+				playerCollider.translate( deltaPosition );
+
+				playerCollisions();
+
+				camera.position.copy( playerCollider.end );
+
+			}
+
+			function playerSphereCollision( sphere ) {
+
+				const center = vector1.addVectors( playerCollider.start, playerCollider.end ).multiplyScalar( 0.5 );
+
+				const sphere_center = sphere.collider.center;
+
+				const r = playerCollider.radius + sphere.collider.radius;
+				const r2 = r * r;
+
+				// approximation: player = 3 spheres
+
+				for ( const point of [ playerCollider.start, playerCollider.end, center ] ) {
+
+					const d2 = point.distanceToSquared( sphere_center );
+
+					if ( d2 < r2 ) {
+
+						const normal = vector1.subVectors( point, sphere_center ).normalize();
+						const v1 = vector2.copy( normal ).multiplyScalar( normal.dot( playerVelocity ) );
+						const v2 = vector3.copy( normal ).multiplyScalar( normal.dot( sphere.velocity ) );
+
+						playerVelocity.add( v2 ).sub( v1 );
+						sphere.velocity.add( v1 ).sub( v2 );
+
+						const d = ( r - Math.sqrt( d2 ) ) / 2;
+						sphere_center.addScaledVector( normal, - d );
+
+					}
+
+				}
+
+			}
+
+			function spheresCollisions() {
+
+				for ( let i = 0, length = spheres.length; i < length; i ++ ) {
+
+					const s1 = spheres[ i ];
+
+					for ( let j = i + 1; j < length; j ++ ) {
+
+						const s2 = spheres[ j ];
+
+						const d2 = s1.collider.center.distanceToSquared( s2.collider.center );
+						const r = s1.collider.radius + s2.collider.radius;
+						const r2 = r * r;
+
+						if ( d2 < r2 ) {
+
+							const normal = vector1.subVectors( s1.collider.center, s2.collider.center ).normalize();
+							const v1 = vector2.copy( normal ).multiplyScalar( normal.dot( s1.velocity ) );
+							const v2 = vector3.copy( normal ).multiplyScalar( normal.dot( s2.velocity ) );
+
+							s1.velocity.add( v2 ).sub( v1 );
+							s2.velocity.add( v1 ).sub( v2 );
+
+							const d = ( r - Math.sqrt( d2 ) ) / 2;
+
+							s1.collider.center.addScaledVector( normal, d );
+							s2.collider.center.addScaledVector( normal, - d );
+
+						}
+
+					}
+
+				}
+
+			}
+
+			function updateSpheres( deltaTime ) {
+
+				spheres.forEach( sphere => {
+
+					sphere.collider.center.addScaledVector( sphere.velocity, deltaTime );
+
+					const result = worldOctree.sphereIntersect( sphere.collider );
+
+					if ( result ) {
+
+						sphere.velocity.addScaledVector( result.normal, - result.normal.dot( sphere.velocity ) * 1.5 );
+						sphere.collider.center.add( result.normal.multiplyScalar( result.depth ) );
+
+					} else {
+
+						sphere.velocity.y -= GRAVITY * deltaTime;
+
+					}
+
+					const damping = Math.exp( - 1.5 * deltaTime ) - 1;
+					sphere.velocity.addScaledVector( sphere.velocity, damping );
+
+					playerSphereCollision( sphere );
+
+				} );
+
+				spheresCollisions();
+
+				for ( const sphere of spheres ) {
+
+					sphere.mesh.position.copy( sphere.collider.center );
+
+				}
+
+			}
+
+			function getForwardVector() {
+
+				camera.getWorldDirection( playerDirection );
+				playerDirection.y = 0;
+				playerDirection.normalize();
+
+				return playerDirection;
+
+			}
+
+			function getSideVector() {
+
+				camera.getWorldDirection( playerDirection );
+				playerDirection.y = 0;
+				playerDirection.normalize();
+				playerDirection.cross( camera.up );
+
+				return playerDirection;
+
+			}
+
+			function controls( deltaTime ) {
+
+				// gives a bit of air control
+				const speedDelta = deltaTime * ( playerOnFloor ? 25 : 8 );
+
+				if ( keyStates[ 'KeyW' ] ) {
+
+					playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
+
+				}
+
+				if ( keyStates[ 'KeyS' ] ) {
+
+					playerVelocity.add( getForwardVector().multiplyScalar( - speedDelta ) );
+
+				}
+
+				if ( keyStates[ 'KeyA' ] ) {
+
+					playerVelocity.add( getSideVector().multiplyScalar( - speedDelta ) );
+
+				}
+
+				if ( keyStates[ 'KeyD' ] ) {
+
+					playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
+
+				}
+
+				if ( playerOnFloor ) {
+
+					if ( keyStates[ 'Space' ] ) {
+
+						playerVelocity.y = 15;
+
+					}
+
+				}
+
+			}
+
+
+
+				animate();
+
+
+			function teleportPlayerIfOob(){
+				if (camera.position.y <= -25){
+					playerCollider.start.set( 0, 0.35, 0 );
+					playerCollider.end.set( 0, 1, 0 );
+					playerCollider.radius =  0.35;
+					camera.position.copy( playerCollider.end );
+					camera.rotation.set( 0, 0, 0 );
+				}
+			}
+
+			const loader = new GLTFLoader();
+
+			loader.load( 'models/maps/Planet_destroyed_bis.glb', ( gltf ) => {
+
+				scene.add( gltf.scene );
+
+				//worldOctree.fromGraphNode( gltf.scene );
+
+				gltf.scene.traverse( child => {
+
+					if ( child.isMesh ) {
+
+						child.castShadow = true;
+						child.receiveShadow = true;
+
+						if ( child.material.map ) {
+
+							child.material.map.anisotropy = 8;
+
+						}
+
+					}
+
+				} );
+
+			} );
+			function animate() {
+
+				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
+
+				// we look for collisions in substeps to mitigate the risk of
+				// an object traversing another too quickly for detection.
+
+				for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
+
+					controls( deltaTime );
+
+					updatePlayer( deltaTime );
+
+					updateSpheres( deltaTime );
+
+					teleportPlayerIfOob();
+
+				}
+
+				renderer.render( scene, camera );
+
+				stats.update();
+
+				requestAnimationFrame( animate );
+
 			}
 
 
