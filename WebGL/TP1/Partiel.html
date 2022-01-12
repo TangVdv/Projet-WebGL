@@ -7,7 +7,7 @@
 		<link type="text/css" rel="stylesheet" href="bootstrap.min.css">
 	</head>
 
-	<body>
+	<body class="bg-dark">
 		<div id = "overlay" class="d-flex justify-content-center">
 			<button class="btn-success btn-lg" id = "startButton">Start</button>
 		</div>
@@ -28,7 +28,6 @@
 				import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
 
 				import { OrbitControls } from '../three.js-master/examples/jsm/controls/OrbitControls.js';
-				import  { FirstPersonControls } from '../three.js-master/examples/jsm/controls/FirstPersonControls.js';
 				import { FBXLoader } from '../three.js-master/examples/jsm/loaders/FBXLoader.js';
 
 	      import { MTLLoader } from '../three.js-master/examples/jsm/loaders/MTLLoader.js';
@@ -40,7 +39,7 @@
 				import { Capsule } from '../three.js-master/examples/jsm/math/Capsule.js';
 
 				let camera, scene, renderer, stats;
-				let gui, controls, controls_2;
+				let gui, controls;
 				//let gui;
 
 				const clock = new THREE.Clock();
@@ -53,61 +52,52 @@
 				let video, Vstatus;
 				let light, hemiLight;
 
-				const GRAVITY = 30;
+				const GRAVITY = 400;
 
 				const STEPS_PER_FRAME = 5;
 
 				const worldOctree = new Octree();
 
-				const playerCollider = new Capsule( new THREE.Vector3( 0, 0.35, 0 ), new THREE.Vector3( 0, 1, 0 ), 0.35 );
+				const playerCollider = new Capsule( new THREE.Vector3( 0, 100, 0 ), new THREE.Vector3( 0, 100, 0 ), 100 );
 
 				const playerVelocity = new THREE.Vector3();
 				const playerDirection = new THREE.Vector3();
 
-				document.addEventListener( 'keydown', ( event ) => {
-
-				keyStates[ event.code ] = true;
-
-			} );
-
-			document.addEventListener( 'keyup', ( event ) => {
-
-				keyStates[ event.code ] = false;
-
-			} );
-
-			document.body.addEventListener( 'mousemove', ( event ) => {
-
-				if ( document.pointerLockElement === document.body ) {
-
-					camera.rotation.y -= event.movementX / 500;
-					camera.rotation.x -= event.movementY / 500;
-
-				}
-
-			} );
-
 				let playerOnFloor = false;
 				let mouseTime = 0;
+				let fps = false;
 
 				const keyStates = {};
 
+				const vector1 = new THREE.Vector3();
+				const vector2 = new THREE.Vector3();
+				const vector3 = new THREE.Vector3();
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 50000 );
+				camera.rotation.order = 'YXZ';
+
 				const startButton = document.getElementById( 'startButton' );
 				startButton.addEventListener( 'click', init );
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true;
+				container.appendChild( renderer.domElement );
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xa0a0a0 );
+				scene.fog = new THREE.Fog( 0xa0a0a0, 12000, 15000 );
+
+				// stats
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+				animate();
 
 				function setup(){
 
 					const overlay = document.getElementById('overlay');
 					overlay.remove();
-
-					camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 50000 );
-					camera.position.set( 100, 800, -200 );
-
-					renderer = new THREE.WebGLRenderer( { antialias: true } );
-					renderer.setPixelRatio( window.devicePixelRatio );
-					renderer.setSize( window.innerWidth, window.innerHeight );
-					renderer.shadowMap.enabled = true;
-					container.appendChild( renderer.domElement );
 
 					window.addEventListener( 'resize', onWindowResize );
 
@@ -120,18 +110,11 @@
 					light.shadow.mapSize.width = 2048; //Qualité de l'ombre en largeur
 					light.shadow.mapSize.height = 2048; //Qualité de l'ombre en hauteur
 
-					// stats
-					stats = new Stats();
-					container.appendChild( stats.dom );
 				}
 
 				function init() {
 					setup();
 					const container = document.getElementById('container');
-
-					scene = new THREE.Scene();
-					scene.background = new THREE.Color( 0xa0a0a0 );
-					scene.fog = new THREE.Fog( 0xa0a0a0, 12000, 15000 );
 
 					scene.add( hemiLight );
 
@@ -163,9 +146,6 @@
 
 					setupControls();
 					controls_2.enabled = false;
-
-
-					animate();
 				}
 
 				function Volcan(){
@@ -180,24 +160,14 @@
 					scene.add( hemiLight );
 					scene.add( light );
 
-					// ground
-					const mesh = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
-					mesh.rotation.x = - Math.PI / 2;
-					mesh.receiveShadow = true;
-					scene.add( mesh );
-
-					setupControls();
-					controls_2.enabled = false;
-
 					createKenshiro();
 					createSaitama();
-
 					buildVolcanMap();
+
+					setup_keys();
 
 					animate();
 				}
-
-
 
 				function setupControls(){
 					// CONTROL
@@ -208,11 +178,6 @@
 					controls.maxDistance = 20000;
 					controls.enablePan = false;
 					controls.enabled = true;
-
-					controls_2 = new FirstPersonControls(camera, renderer.domElement);
-	        controls_2.movementSpeed = 1000;
-	        controls_2.lookSpeed = 0.1;
-	        controls_2.lookVertical = true;
 				}
 
 				function createShrek(){
@@ -283,20 +248,30 @@
 				}
 
 	      function buildVolcanMap() {
-						let loader = new FBXLoader();
+						const loader = new FBXLoader();
 
-							loader.load( 'models/maps/Volcan/Volcan.fbx', function ( planet ) {
-								scene.add( planet );
-								planet.scale.set(.2,.2,.2);
+						loader.load( 'models/maps/Volcan/Volcan.fbx', ( volcano ) => {
+							volcano.scale.set(.2,.2,.2);
+							scene.add( volcano );
 
-								planet.traverse( function ( child ) {
-									if ( child.isMesh ) {
-										child.castShadow = true;
-										child.receiveShadow = true;
+							worldOctree.fromGraphNode( volcano );
+							volcano.traverse( child => {
+
+								if ( child.isMesh ) {
+
+									child.castShadow = true;
+									child.receiveShadow = true;
+
+									if ( child.material.map ) {
+
+										child.material.map.anisotropy = 8;
+
 									}
-								} );
+
+								}
 
 							} );
+						});
 				}
 
 				function createKenshiro() {
@@ -314,26 +289,20 @@
 								}
 							});
 
-							//gltf.animations; // Array<THREE.AnimationClip>
-							gltf.scene; // THREE.Group
-							gltf.scenes; // Array<THREE.Group>
-							gltf.cameras; // Array<THREE.Camera>
-							gltf.asset; // Object
-
 						});
 					}
 
 				function createSaitama() {
 					const loader = new FBXLoader();
-							loader.load( 'models/Saitama/Saitama.fbx', function ( object ) {
+							loader.load( 'models/Saitama/Saitama.fbx', function ( saitama ) {
 
-									mixer = new THREE.AnimationMixer( object );
-									object.scale.set(.5,.5,.5);
-									object.scale.set(.5,.5,.5);
-									const action = mixer.clipAction( object.animations[ 0 ] );
+									mixer = new THREE.AnimationMixer( saitama );
+									saitama.scale.set(.5,.5,.5);
+									saitama.position.set(-1676, 384, -152);
+									const action = mixer.clipAction( saitama.animations[ 0 ] );
 									action.play();
 
-									object.traverse( function ( child ) {
+									saitama.traverse( function ( child ) {
 
 											if ( child.isMesh ) {
 
@@ -344,7 +313,7 @@
 
 									} );
 
-									scene.add( object );
+									scene.add( saitama );
 
 							} );
 					}
@@ -389,18 +358,11 @@
 										}
 									});
 
-									//gltf.animations; // Array<THREE.AnimationClip>
-									gltf.scene; // THREE.Group
-									gltf.scenes; // Array<THREE.Group>
-									gltf.cameras; // Array<THREE.Camera>
-									gltf.asset; // Object
-
 								});
 							}
 
 				function startVideo(){
 					Vstatus = 1;
-					//console.log("ok");
 					container.style.display = 'none';
 					video.style.display = 'block';
 					video.play();
@@ -417,7 +379,6 @@
 					Volcan();
 				}
 
-
 				function onWindowResize() {
 
 					camera.aspect = window.innerWidth / window.innerHeight;
@@ -429,23 +390,179 @@
 
 				//
 
+				function setup_keys(){
+					document.addEventListener( 'keydown', ( event ) => {
+
+						keyStates[ event.code ] = true;
+
+					} );
+
+					document.addEventListener( 'keyup', ( event ) => {
+
+						keyStates[ event.code ] = false;
+
+					} );
+
+					document.addEventListener( 'mousedown', () => {
+
+						document.body.requestPointerLock();
+
+						mouseTime = performance.now();
+
+					} );
+
+					document.body.addEventListener( 'mousemove', ( event ) => {
+
+						if ( document.pointerLockElement === document.body ) {
+
+							camera.rotation.y -= event.movementX / 500;
+							camera.rotation.x -= event.movementY / 500;
+
+						}
+
+					} );
+
+					fps = true;
+				}
+
+				function playerCollisions() {
+
+					const result = worldOctree.capsuleIntersect( playerCollider );
+					playerOnFloor = false;
+					if ( result ) {
+						playerOnFloor = result.normal.y > 0;
+
+						if ( ! playerOnFloor ) {
+
+							playerVelocity.addScaledVector( result.normal, - result.normal.dot( playerVelocity ) );
+
+						}
+
+						playerCollider.translate( result.normal.multiplyScalar( result.depth ) );
+
+					}
+
+				}
+
+				function updatePlayer( deltaTime ) {
+
+					let damping = Math.exp( - 4 * deltaTime ) - 1;
+
+					if ( ! playerOnFloor ) {
+
+						playerVelocity.y -= GRAVITY * deltaTime;
+
+						// small air resistance
+						damping *= 0.1;
+
+					}
+
+					playerVelocity.addScaledVector( playerVelocity, damping );
+
+					const deltaPosition = playerVelocity.clone().multiplyScalar( deltaTime );
+					playerCollider.translate( deltaPosition );
+
+					playerCollisions();
+
+					camera.position.copy( playerCollider.end );
+
+				}
+
+				function getForwardVector() {
+
+					camera.getWorldDirection( playerDirection );
+					playerDirection.y = 0;
+					playerDirection.normalize();
+
+					return playerDirection;
+
+				}
+
+				function getSideVector() {
+
+					camera.getWorldDirection( playerDirection );
+					playerDirection.y = 0;
+					playerDirection.normalize();
+					playerDirection.cross( camera.up );
+
+					return playerDirection;
+
+				}
+
+				function controls_2( deltaTime ) {
+
+					const speedDelta = deltaTime * ( playerOnFloor ? 1500 : 100 );
+
+					if ( keyStates[ 'KeyW' ] ) {
+						playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
+
+					}
+
+					if ( keyStates[ 'KeyS' ] ) {
+						playerVelocity.add( getForwardVector().multiplyScalar( - speedDelta ) );
+
+					}
+
+					if ( keyStates[ 'KeyA' ] ) {
+						playerVelocity.add( getSideVector().multiplyScalar( - speedDelta ) );
+
+					}
+
+					if ( keyStates[ 'KeyD' ] ) {
+						playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
+
+					}
+
+					if ( playerOnFloor ) {
+
+						if ( keyStates[ 'Space' ] ) {
+
+							playerVelocity.y = 300;
+
+						}
+
+					}
+
+				}
+
+				function teleportPlayerIfOob(){
+					if (camera.position.y <= -125){
+						playerCollider.start.set( 0, 100, 0 );
+						playerCollider.end.set( 0, 100, 0 );
+						playerCollider.radius =  100;
+						camera.position.copy( playerCollider.end );
+						camera.rotation.set( 0, 0, 0 );
+					}
+				}
+
+				//
+
 				function animate() {
 
 					requestAnimationFrame( animate );
 
 					const delta = clock.getDelta();
-
+					const deltaTime = Math.min( 0.05, delta ) / STEPS_PER_FRAME;
 					if ( mixer ) mixer.update( delta );
-					if (controls_2) controls_2.update(delta);
 
-					if (Rshrek) Rshrek.position.y -= 20;
+					if (Rshrek){
+						Rshrek.position.y -= 20;
+						if(Vstatus == 0){
+							if(Rshrek.position.y < 100){
+								startVideo();
+							}
+						}
+					}
 					if (Rmissile) Rmissile.position.y -= 20;
-					//camera.position.y -= 2;
+					if (fps == true){
+						for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
 
+							controls_2( deltaTime );
 
-					if(Vstatus == 0){ // Has video already been played?
-						if(Rshrek.position.y < 100){
-							startVideo();
+							updatePlayer( deltaTime );
+
+							teleportPlayerIfOob();
+
 						}
 					}
 

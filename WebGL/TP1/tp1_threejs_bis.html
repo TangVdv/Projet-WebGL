@@ -114,12 +114,6 @@
 
 			} );
 
-			document.addEventListener( 'mouseup', () => {
-
-				throwBall();
-
-			} );
-
 			document.body.addEventListener( 'mousemove', ( event ) => {
 
 				if ( document.pointerLockElement === document.body ) {
@@ -145,7 +139,6 @@
 			function playerCollisions() {
 
 				const result = worldOctree.capsuleIntersect( playerCollider );
-
 				playerOnFloor = false;
 
 				if ( result ) {
@@ -213,7 +206,7 @@
 
 				// gives a bit of air control
 				const speedDelta = deltaTime * ( playerOnFloor ? 1500 : 100 );
-
+				console.log("speedDelta = "+speedDelta);
 				if ( keyStates[ 'KeyW' ] ) {
 
 					playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
@@ -250,10 +243,7 @@
 
 			}
 
-
-
-				animate();
-
+			animate();
 
 			function teleportPlayerIfOob(){
 				if (camera.position.y <= -125){
@@ -319,10 +309,10 @@
 
 			function animate() {
 
-				console.log(camera.position);
-
 				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
-
+				console.log("deltaTime = "+deltaTime);
+				console.log("STEPS_PER_FRAME = "+ STEPS_PER_FRAME);
+				console.log("MATH = " + Math.min( 0.05, clock.getDelta() ) );
 				// we look for collisions in substeps to mitigate the risk of
 				// an object traversing another too quickly for detection.
 
