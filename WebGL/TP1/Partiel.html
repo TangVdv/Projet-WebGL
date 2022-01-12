@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>three.js webgl - FBX loader</title>
+		<title>Olala catastrophe</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="bootstrap.min.css">
@@ -51,6 +51,10 @@
 				let Opos;
 				let video, Vstatus;
 				let light, hemiLight;
+				let sEEEEEEEEEEEE, rocketSound, kenshiroSound;
+
+
+
 
 				const GRAVITY = 400;
 
@@ -74,7 +78,21 @@
 				const vector3 = new THREE.Vector3();
 
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 50000 );
+				camera.position.set( 100, 800, -200 );
 				camera.rotation.order = 'YXZ';
+
+				const slistener = new THREE.AudioListener();
+				camera.add( slistener );
+				const Ssound = new THREE.Audio( slistener );
+
+				const listener = new THREE.AudioListener();
+				camera.add( listener );
+				const sound = new THREE.Audio( listener );
+
+				const klistener = new THREE.AudioListener();
+				camera.add( klistener );
+				const Ksound = new THREE.Audio( klistener );
+
 
 				const startButton = document.getElementById( 'startButton' );
 				startButton.addEventListener( 'click', init );
@@ -208,8 +226,22 @@
 
 						} );
 
-
 						scene.add( shrek );
+
+
+						// Sound
+
+						sEEEEEEEEEEEE = new THREE.PositionalAudio(slistener);
+						const sEEEaudio = new THREE.AudioLoader();
+						sEEEaudio.load( 'Music/Takeshi.mp3', function( sEEEsound ) {
+							sEEEEEEEEEEEE.setBuffer( sEEEsound );
+							sEEEEEEEEEEEE.setLoop( true );
+							sEEEEEEEEEEEE.setVolume( 3 );
+							sEEEEEEEEEEEE.setRefDistance(30);
+							sEEEEEEEEEEEE.play();
+						});
+
+					shrek.add(sEEEEEEEEEEEE);
 					} );
 				}
 
@@ -244,6 +276,21 @@
 
 						scene.add( missile );
 						Rmissile = missile;
+
+
+						// Sound
+
+						rocketSound = new THREE.PositionalAudio(listener);
+						const rocket_sound = new THREE.AudioLoader();
+						rocket_sound.load( 'Music/kenshiro.mp3', function( rocket__Sound ) {
+							rocketSound.setBuffer( rocket__Sound );
+							rocketSound.setLoop( true );
+							rocketSound.setVolume( 3 );
+							rocketSound.setRefDistance(30);
+							rocketSound.play();
+						});
+
+						missile.add(rocketSound);
 					} );
 				}
 
@@ -272,6 +319,16 @@
 
 							} );
 						});
+
+						// MUSIC
+						const audioLoader = new THREE.AudioLoader();
+						audioLoader.load( 'Music/lava.mp3', function( buffer ) {
+							sound.setBuffer( buffer );
+							sound.setLoop( true );
+							sound.setVolume( 0.1 );
+							sound.setVolume( 0.05 );
+							sound.play();
+				});
 				}
 
 				function createKenshiro() {
@@ -289,7 +346,25 @@
 								}
 							});
 
+
+							// Sound
+
+							kenshiroSound = new THREE.PositionalAudio(klistener);
+							const kenshiro_sound = new THREE.AudioLoader();
+							kenshiro_sound.load( 'Music/rocket.mp3', function( kenshiro__Sound ) {
+								kenshiroSound.setBuffer( kenshiro__Sound );
+								kenshiroSound.setLoop( true );
+								kenshiroSound.setVolume( 3 );
+								kenshiroSound.setRefDistance(15);
+								kenshiroSound.play();
+							});
+
+							kenshiro.add(kenshiroSound);
+
 						});
+
+
+
 					}
 
 				function createSaitama() {
@@ -553,7 +628,7 @@
 							}
 						}
 					}
-					if (Rmissile) Rmissile.position.y -= 20;
+					if (Rmissile) Rmissile.position.y -= 20, camera.position.y -= 2;
 					if (fps == true){
 						for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
 
