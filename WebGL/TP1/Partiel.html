@@ -393,31 +393,6 @@
 							} );
 					}
 
-				function buildCityClean() {
-						let loader = new GLTFLoader();
-
-						loader.load('models/maps/City_clean/City_clean.glb', function ( city_clean ) {
-
-								scene.add( city_clean.scene );
-								city_clean.scene.scale.set(5,5,5);
-							  city_clean.name = "map";
-
-								city_clean.scene.traverse( function ( child ) {
-									if ( child.isMesh ) {
-										child.castShadow = true;
-										child.receiveShadow = true;
-									}
-								});
-
-								//gltf.animations; // Array<THREE.AnimationClip>
-								gltf.scene; // THREE.Group
-								gltf.scenes; // Array<THREE.Group>
-								gltf.cameras; // Array<THREE.Camera>
-								gltf.asset; // Object
-
-							});
-						}
-
 				function buildCityDestroyed() {
 							let loader = new GLTFLoader();
 
