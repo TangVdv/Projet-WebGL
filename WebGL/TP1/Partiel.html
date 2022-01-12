@@ -4,10 +4,13 @@
 		<title>three.js webgl - FBX loader</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-
+		<link type="text/css" rel="stylesheet" href="bootstrap.min.css">
 	</head>
 
 	<body>
+		<div id = "overlay" class="d-flex justify-content-center">
+			<button class="btn-success btn-lg" id = "startButton">Start</button>
+		</div>
 		<div id = "overlay_video" class="d-flex justify-content-center" >
 			<video id="video" width="1600" style="display:none" muted>
 	  		<source src="video/bomb.mp4" type="video/mp4">
@@ -31,6 +34,7 @@
 	      import { MTLLoader } from '../three.js-master/examples/jsm/loaders/MTLLoader.js';
 	      import { OBJLoader } from '../three.js-master/examples/jsm/loaders/OBJLoader.js';
 				import { GLTFLoader } from '../three.js-master/examples/jsm/loaders/GLTFLoader.js';
+				import { ColladaLoader } from '../three.js-master/examples/jsm/loaders/ColladaLoader.js';
 
 				import { Octree } from '../three.js-master/examples/jsm/math/Octree.js';
 				import { Capsule } from '../three.js-master/examples/jsm/math/Capsule.js';
@@ -47,6 +51,7 @@
 				let Rshrek, Rmissile, Rmap;
 				let Opos;
 				let video, Vstatus;
+				let light, hemiLight;
 
 				const GRAVITY = 30;
 
@@ -87,7 +92,13 @@
 
 				const keyStates = {};
 
+				const startButton = document.getElementById( 'startButton' );
+				startButton.addEventListener( 'click', init );
+
 				function setup(){
+
+					const overlay = document.getElementById('overlay');
+					overlay.remove();
 
 					camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 50000 );
 					camera.position.set( 100, 800, -200 );
@@ -100,33 +111,30 @@
 
 					window.addEventListener( 'resize', onWindowResize );
 
+					hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+					hemiLight.position.set( 0, 200, 0 );
+
+					light = new THREE.PointLight( 0xffffff, .33, 10000 );
+					light.position.set( 1000, 2000, 1000 );
+					light.castShadow = true;
+					light.shadow.mapSize.width = 2048; //Qualité de l'ombre en largeur
+					light.shadow.mapSize.height = 2048; //Qualité de l'ombre en hauteur
+
 					// stats
 					stats = new Stats();
 					container.appendChild( stats.dom );
 				}
-				setup();
-
-				init();
-				//animate();
-
-
 
 				function init() {
+					setup();
 					const container = document.getElementById('container');
 
 					scene = new THREE.Scene();
 					scene.background = new THREE.Color( 0xa0a0a0 );
 					scene.fog = new THREE.Fog( 0xa0a0a0, 12000, 15000 );
 
-					const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
-					hemiLight.position.set( 0, 200, 0 );
 					scene.add( hemiLight );
 
-					const light = new THREE.PointLight( 0xffffff, .33, 10000 );
-					light.position.set( 1000, 2000, 1000 );
-					light.castShadow = true;
-					light.shadow.mapSize.width = 2048; //Qualité de l'ombre en largeur
-					light.shadow.mapSize.height = 2048; //Qualité de l'ombre en hauteur
 					scene.add( light );
 
 					//Video setup
@@ -164,18 +172,12 @@
 					const container = document.getElementById('container');
 
 					scene = new THREE.Scene();
+
 					scene.background = new THREE.Color( 0xa0a0a0 );
-					scene.fog = new THREE.Fog( 0xa0a0a0, 12000, 15000 );
+					//scene.fog = new THREE.Fog( 0xa0a0a0, 12000, 15000 );
 
-					const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
-					hemiLight.position.set( 0, 200, 0 );
+
 					scene.add( hemiLight );
-
-					const light = new THREE.PointLight( 0xffffff, .33, 10000 );
-					light.position.set( 1000, 2000, 1000 );
-					light.castShadow = true;
-					light.shadow.mapSize.width = 2048; //Qualité de l'ombre en largeur
-					light.shadow.mapSize.height = 2048; //Qualité de l'ombre en hauteur
 					scene.add( light );
 
 					// ground
@@ -187,8 +189,8 @@
 					setupControls();
 					controls_2.enabled = false;
 
-					//createKenshiro();
-					//createSaitama();
+					createKenshiro();
+					createSaitama();
 
 					buildVolcanMap();
 
@@ -281,15 +283,11 @@
 				}
 
 	      function buildVolcanMap() {
-					new MTLLoader().setPath( 'models/maps/' ).load( 'Planet_Destroyed.mtl', function ( materials ) {
-							materials.preload();
+						let loader = new FBXLoader();
 
-							new OBJLoader()
-							.setMaterials( materials )
-							.setPath( 'models/maps/' )
-							.load( 'Planet_Destroyed.obj', function ( planet ) {
+							loader.load( 'models/maps/Volcan/Volcan.fbx', function ( planet ) {
 								scene.add( planet );
-								planet.scale.set(10,10,10);
+								planet.scale.set(.2,.2,.2);
 
 								planet.traverse( function ( child ) {
 									if ( child.isMesh ) {
@@ -299,7 +297,6 @@
 								} );
 
 							} );
-					} );
 				}
 
 				function createKenshiro() {
@@ -327,33 +324,29 @@
 					}
 
 				function createSaitama() {
-						let loader = new GLTFLoader();
+					const loader = new FBXLoader();
+							loader.load( 'models/Saitama/Saitama.fbx', function ( object ) {
 
-						loader.load('models/test/Saitama_30.glb', function ( saitama ) {
-								let mixer = new THREE.AnimationMixer(saitama);
+									mixer = new THREE.AnimationMixer( object );
+									object.scale.set(.5,.5,.5);
+									object.scale.set(.5,.5,.5);
+									const action = mixer.clipAction( object.animations[ 0 ] );
+									action.play();
 
-								const actionSaitama = mixer.clipAction(saitama.animations[0]);
-				        actionSaitama.play();
+									object.traverse( function ( child ) {
 
-								scene.add( saitama.scene );
-								saitama.scene.scale.set(1.4,1.4,1.4);
-								saitama.scene.position.set(0, 0, 100);
-								saitama.scene.rotation.y = Math.PI;
+											if ( child.isMesh ) {
 
-								saitama.scene.traverse( function ( child ) {
-									if ( child.isMesh ) {
-										child.castShadow = true;
-										child.receiveShadow = true;
-									}
-								});
+													child.castShadow = true;
+													child.receiveShadow = true;
 
-								gltf.animations; // Array<THREE.AnimationClip>
-								gltf.scene; // THREE.Group
-								gltf.scenes; // Array<THREE.Group>
-								gltf.cameras; // Array<THREE.Camera>
-								gltf.asset; // Object
+											}
 
-							});
+									} );
+
+									scene.add( object );
+
+							} );
 					}
 
 				function buildCityClean() {
@@ -381,7 +374,7 @@
 							});
 						}
 
-						function buildCityDestroyed() {
+				function buildCityDestroyed() {
 							let loader = new GLTFLoader();
 
 							loader.load('models/maps/City_destroyed/City_destroyed.gltf', function ( city_destroyed ) {
