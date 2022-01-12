@@ -71,6 +71,13 @@
 
 			container.appendChild( stats.domElement );
 
+			let Rbridge;
+
+			const objects = [];
+
+			const raycaster = new THREE.Raycaster();
+			const pointer = new THREE.Vector2();
+
 			const GRAVITY = 400;
 
 			const NUM_SPHERES = 100;
@@ -126,6 +133,9 @@
 			} );
 
 			window.addEventListener( 'resize', onWindowResize );
+
+			document.addEventListener( 'mouseup', onPointerMove );
+
 
 			function onWindowResize() {
 
@@ -206,7 +216,6 @@
 
 				// gives a bit of air control
 				const speedDelta = deltaTime * ( playerOnFloor ? 1500 : 100 );
-				console.log("speedDelta = "+speedDelta);
 				if ( keyStates[ 'KeyW' ] ) {
 
 					playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
@@ -257,10 +266,10 @@
 
 			const loader = new FBXLoader();
 
-			loader.load( 'models/maps/Volcan/Volcan.fbx', ( gltf ) => {
+			loader.load( 'models/maps/Volcan/volcan.fbx', ( gltf ) => {
 				gltf.scale.set(.2,.2,.2);
 				scene.add( gltf );
-
+				objects.push( gltf );
 				worldOctree.fromGraphNode( gltf );
 				gltf.traverse( child => {
 
@@ -289,6 +298,7 @@
 				loader.load('models/kenshiro_final.glb', function ( kenshiro ) {
 
 						scene.add( kenshiro.scene );
+						objects.push( kenshiro.scene );
 						kenshiro.scene.scale.set(5,5,5);
 
 						kenshiro.scene.traverse( function ( child ) {
@@ -298,21 +308,80 @@
 							}
 						});
 
-						//gltf.animations; // Array<THREE.AnimationClip>
-						gltf.scene; // THREE.Group
-						gltf.scenes; // Array<THREE.Group>
-						gltf.cameras; // Array<THREE.Camera>
-						gltf.asset; // Object
+
 
 					});
+			}
+
+			let activate = false;
+
+			const cubeGeometry = new THREE.BoxGeometry(70,50,70);
+			const cylinderGeometry = new THREE.CylinderGeometry( 30, 30, 40, 32 );
+			const material = new THREE.MeshPhongMaterial( {color: 0xA9A9A9} );
+
+			const cylinder = new THREE.Mesh(cylinderGeometry, material);
+			cylinder.position.set(-150, 0, -350);
+			scene.add(cylinder);
+			objects.push(cylinder);
+
+			function onPointerMove( event ) {
+
+				pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+
+				raycaster.setFromCamera( pointer, camera );
+
+				const intersects = raycaster.intersectObjects( objects, false );
+
+				if (intersects.length > 0){
+						scene.add(Rbridge);
+						activate = true;
 				}
 
+			}
+
+			loader.load( 'models/fbx/bridge.fbx', ( bridge ) => {
+				bridge.scale.set(.5,.5,.5);
+				bridge.position.set(0,-1100, -1150);
+				bridge.rotation.y = Math.PI / 2;
+				Rbridge = bridge;
+				bridge.traverse( child => {
+
+					if ( child.isMesh ) {
+
+						child.castShadow = true;
+						child.receiveShadow = true;
+
+						if ( child.material.map ) {
+
+							child.material.map.anisotropy = 8;
+
+						}
+
+					}
+
+				} );
+
+			} );
+
+
+
+
+
+
 			function animate() {
+				if (Rbridge && activate == true){
+					console.log(Rbridge.position.y);
+					if ( Rbridge.position.y < -860) {
+						Rbridge.position.y += 1;
+					}
+					else {
+						activate = false;
+						worldOctree.fromGraphNode( Rbridge );
+					}
+				}
+
 
 				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
-				console.log("deltaTime = "+deltaTime);
-				console.log("STEPS_PER_FRAME = "+ STEPS_PER_FRAME);
-				console.log("MATH = " + Math.min( 0.05, clock.getDelta() ) );
 				// we look for collisions in substeps to mitigate the risk of
 				// an object traversing another too quickly for detection.
 

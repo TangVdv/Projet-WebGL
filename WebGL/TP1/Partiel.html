@@ -10,12 +10,19 @@
 	<body class="bg-dark">
 		<div id = "overlay" class="d-flex justify-content-center">
 			<button class="btn-success btn-lg" id = "startButton">Start</button>
+			<video id="video" width="1600" controls>
+	  		<source src="video/Introduction.mp4" type="video/mp4">
+			</video>
 		</div>
 		<div id = "overlay_video" class="d-flex justify-content-center" >
 			<video id="video" width="1600" style="display:none" muted>
-	  		<source src="video/bomb.mp4" type="video/mp4">
-					Your browser does not support the video tag.
+	  		<source src="video/Explosion.mp4" type="video/mp4">
 			</video>
+		</div>
+		<div id="instructions" style="display:none">
+			<div>
+				<h1>Click to begin</h1>
+			</div>
 		</div>
 
 		<div id="container">
@@ -47,14 +54,20 @@
 				let mixer;
 				let fog = 0;
 	      let shrekPosition;
-				let Rshrek, Rmissile, Rmap;
+				let Rshrek, Rmissile, Rmap, Rbridge;
 				let Opos;
 				let video, Vstatus;
 				let light, hemiLight;
 				let sEEEEEEEEEEEE, rocketSound, kenshiroSound;
+				let activate;
+				let floorSpeed = 1500;
+				let airSpeed = 100;
+				let jumpHeight = 300;
 
+				const raycaster = new THREE.Raycaster();
+				const pointer = new THREE.Vector2();
 
-
+				const objects = [];
 
 				const GRAVITY = 400;
 
@@ -66,6 +79,8 @@
 
 				const playerVelocity = new THREE.Vector3();
 				const playerDirection = new THREE.Vector3();
+
+				const nuclearSound = new Audio('Music/Explosion.mp3');
 
 				let playerOnFloor = false;
 				let mouseTime = 0;
@@ -81,17 +96,9 @@
 				camera.position.set( 100, 800, -200 );
 				camera.rotation.order = 'YXZ';
 
-				const slistener = new THREE.AudioListener();
-				camera.add( slistener );
-				const Ssound = new THREE.Audio( slistener );
-
 				const listener = new THREE.AudioListener();
 				camera.add( listener );
 				const sound = new THREE.Audio( listener );
-
-				const klistener = new THREE.AudioListener();
-				camera.add( klistener );
-				const Ksound = new THREE.Audio( klistener );
 
 
 				const startButton = document.getElementById( 'startButton' );
@@ -109,6 +116,8 @@
 				// stats
 				stats = new Stats();
 				container.appendChild( stats.dom );
+
+				document.addEventListener( 'mouseup', onPointerMove );
 
 				animate();
 
@@ -143,7 +152,7 @@
 					Vstatus = 0;
 					//video.play();
 
-					Opos = 1500;
+					Opos = 2100;
 					camera.position.y += Opos;
 					//1000 1500
 
@@ -172,7 +181,7 @@
 					scene = new THREE.Scene();
 
 					scene.background = new THREE.Color( 0xa0a0a0 );
-					//scene.fog = new THREE.Fog( 0xa0a0a0, 12000, 15000 );
+					scene.fog = new THREE.Fog( 0xa0a0a0, 12000, 15000 );
 
 
 					scene.add( hemiLight );
@@ -181,8 +190,11 @@
 					createKenshiro();
 					createSaitama();
 					buildVolcanMap();
+					bridge();
 
 					setup_keys();
+
+					buildGui();
 
 					animate();
 				}
@@ -231,7 +243,7 @@
 
 						// Sound
 
-						sEEEEEEEEEEEE = new THREE.PositionalAudio(slistener);
+						sEEEEEEEEEEEE = new THREE.PositionalAudio(listener);
 						const sEEEaudio = new THREE.AudioLoader();
 						sEEEaudio.load( 'Music/Takeshi.mp3', function( sEEEsound ) {
 							sEEEEEEEEEEEE.setBuffer( sEEEsound );
@@ -251,16 +263,10 @@
 	        const missileLoader = new FBXLoader();
 					missileLoader.load( 'models/missile.fbx', function ( missile ) {
 
-						//mixer = new THREE.AnimationMixer( missile );
-						//Rmissile = missile;
-
-	          missile.position.y =  Opos + shrekPosition-30;
+	          missile.position.y =  Opos + shrekPosition;
 	          missile.scale.set(0.3, 0.3, 0.3);
 
 						missile.rotation.x = 1;
-
-						//const action = mixer.clipAction( missile.animations[ 0 ] );
-						//action.play();
 
 						missile.traverse( function ( child ) {
 
@@ -273,16 +279,13 @@
 
 						} );
 
-
 						scene.add( missile );
 						Rmissile = missile;
-
-
 						// Sound
 
 						rocketSound = new THREE.PositionalAudio(listener);
 						const rocket_sound = new THREE.AudioLoader();
-						rocket_sound.load( 'Music/kenshiro.mp3', function( rocket__Sound ) {
+						rocket_sound.load( 'Music/rocket.mp3', function( rocket__Sound ) {
 							rocketSound.setBuffer( rocket__Sound );
 							rocketSound.setLoop( true );
 							rocketSound.setVolume( 3 );
@@ -297,7 +300,7 @@
 	      function buildVolcanMap() {
 						const loader = new FBXLoader();
 
-						loader.load( 'models/maps/Volcan/Volcan.fbx', ( volcano ) => {
+						loader.load( 'models/maps/Volcan/volcan.fbx', ( volcano ) => {
 							volcano.scale.set(.2,.2,.2);
 							scene.add( volcano );
 
@@ -326,9 +329,8 @@
 							sound.setBuffer( buffer );
 							sound.setLoop( true );
 							sound.setVolume( 0.1 );
-							sound.setVolume( 0.05 );
 							sound.play();
-				});
+						});
 				}
 
 				function createKenshiro() {
@@ -338,7 +340,6 @@
 
 							scene.add( kenshiro.scene );
 							kenshiro.scene.scale.set(5,5,5);
-
 							kenshiro.scene.traverse( function ( child ) {
 								if ( child.isMesh ) {
 									child.castShadow = true;
@@ -346,16 +347,15 @@
 								}
 							});
 
-
 							// Sound
 
-							kenshiroSound = new THREE.PositionalAudio(klistener);
+							kenshiroSound = new THREE.PositionalAudio(listener);
 							const kenshiro_sound = new THREE.AudioLoader();
-							kenshiro_sound.load( 'Music/rocket.mp3', function( kenshiro__Sound ) {
+							kenshiro_sound.load( 'Music/kenshiro.mp3', function( kenshiro__Sound ) {
 								kenshiroSound.setBuffer( kenshiro__Sound );
 								kenshiroSound.setLoop( true );
-								kenshiroSound.setVolume( 3 );
-								kenshiroSound.setRefDistance(15);
+								kenshiroSound.setVolume( 4 );
+								kenshiroSound.setRefDistance(1);
 								kenshiroSound.play();
 							});
 
@@ -373,7 +373,7 @@
 
 									mixer = new THREE.AnimationMixer( saitama );
 									saitama.scale.set(.5,.5,.5);
-									saitama.position.set(-1676, 384, -152);
+									saitama.position.set(-862, 89, -1872);
 									const action = mixer.clipAction( saitama.animations[ 0 ] );
 									action.play();
 
@@ -437,9 +437,15 @@
 							}
 
 				function startVideo(){
+
+
+					sEEEEEEEEEEEE.stop();
+					rocketSound.stop();
 					Vstatus = 1;
 					container.style.display = 'none';
 					video.style.display = 'block';
+					nuclearSound.play();
+					nuclearSound.volume = .2;
 					video.play();
 					setTimeout( stopVideo, 7000 );
 				}
@@ -447,6 +453,7 @@
 				function stopVideo(){
 					const overlay_video = document.getElementById('overlay_video');
 					overlay_video.remove();
+					nuclearSound.pause();
 					container.style.display = 'block';
 					while (scene.children.length)
 					    scene.remove(scene.children[0]);
@@ -566,7 +573,7 @@
 
 				function controls_2( deltaTime ) {
 
-					const speedDelta = deltaTime * ( playerOnFloor ? 1500 : 100 );
+					const speedDelta = deltaTime * ( playerOnFloor ? floorSpeed : airSpeed );
 
 					if ( keyStates[ 'KeyW' ] ) {
 						playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
@@ -592,7 +599,7 @@
 
 						if ( keyStates[ 'Space' ] ) {
 
-							playerVelocity.y = 300;
+							playerVelocity.y = jumpHeight;
 
 						}
 
@@ -612,10 +619,112 @@
 
 				//
 
+				function onPointerMove( event ) {
+
+					pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+
+					raycaster.setFromCamera( pointer, camera );
+
+					const intersects = raycaster.intersectObjects( objects, false );
+
+					if (intersects.length > 0){
+							scene.add(Rbridge);
+							activate = true;
+					}
+
+				}
+
+				function bridge(){
+					const cubeGeometry = new THREE.BoxGeometry(70,50,70);
+					const cylinderGeometry = new THREE.CylinderGeometry( 30, 30, 40, 32 );
+					const material = new THREE.MeshPhongMaterial( {color: 0xA9A9A9} );
+
+					const cylinder = new THREE.Mesh(cylinderGeometry, material);
+					cylinder.receiveShadow = true;
+					cylinder.castShadow = true;
+					cylinder.position.set(-150, 0, -350);
+					scene.add(cylinder);
+					objects.push(cylinder);
+
+					const loader = new FBXLoader();
+					loader.load( 'models/bridge/bridge.fbx', ( bridge ) => {
+						bridge.scale.set(.5,.5,.5);
+						bridge.position.set(0,-1100, -1150);
+						bridge.rotation.y = Math.PI / 2;
+						Rbridge = bridge;
+						bridge.traverse( child => {
+
+							if ( child.isMesh ) {
+
+								child.castShadow = true;
+								child.receiveShadow = true;
+
+								if ( child.material.map ) {
+
+									child.material.map.anisotropy = 8;
+
+								}
+
+							}
+
+						} );
+
+					} );
+				}
+
+				//
+
+				function buildGui(){
+
+                const params = {
+										'gravity' : GRAVITY,
+										'player speed on floor' : floorSpeed,
+										'player speed on air' : airSpeed,
+										'jump height' : jumpHeight,
+                    'fog': fog,
+                    'fog_color': scene.fog.color.getHex()
+                };
+
+                gui = new GUI();
+
+            		const folderPlayer = gui.addFolder('Player');
+								folderPlayer.add( params, 'gravity', 0, 1000).step(1).onChange( function (val) {
+												GRAVITY = val;
+								});
+								folderPlayer.add( params, 'player speed on floor', 0, 10000).step(10).onChange( function (val) {
+												floorSpeed = val;
+								});
+								folderPlayer.add( params, 'player speed on air', 0, 1000).step(1).onChange( function (val) {
+												airSpeed = val;
+								});
+								folderPlayer.add( params, 'jump height', 0, 1000).step(1).onChange( function (val) {
+												jumpHeight = val;
+								});
+                const folderFog = gui.addFolder('Fog');
+                folderFog.add( params, 'fog', 0, .0007).step(.00001).onChange( function ( val ) {
+                        scene.fog.density = val;
+                } );
+                folderFog.addColor( params, 'fog_color').onChange( function ( val ) {
+                        scene.fog.color.setHex(val)
+                } );
+
+            }
+
+				//
+
 				function animate() {
 
 					requestAnimationFrame( animate );
 
+					if (Rbridge && activate == true){
+						if ( Rbridge.position.y < -860) {
+							Rbridge.position.y += 1;
+						}
+						else {
+							activate = false;
+							worldOctree.fromGraphNode( Rbridge );
+						}
+					}
 					const delta = clock.getDelta();
 					const deltaTime = Math.min( 0.05, delta ) / STEPS_PER_FRAME;
 					if ( mixer ) mixer.update( delta );

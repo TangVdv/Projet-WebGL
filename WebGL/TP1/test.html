@@ -1,175 +1,104 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 	<head>
-		<title>Stonehenge</title>
+		<title>three.js webgl - interactive - voxel painter</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			body {
+				background-color: #f0f0f0;
+				color: #444;
+			}
+			a {
+				color: #08f;
+			}
+		</style>
 	</head>
 	<body>
+
+		<div id="info">
+			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - voxel painter - webgl<br>
+			<strong>click</strong>: add voxel, <strong>shift + click</strong>: remove voxel
+		</div>
 
 		<script type="module">
 
 			import * as THREE from '../three.js-master/build/three.module.js';
 
-			import { GUI } from '../three.js-master/examples/jsm/libs/dat.gui.module.js';
+			let camera, scene, renderer;
+			let plane;
+			let pointer, raycaster, isShiftDown = false;
 
-			import { OrbitControls } from '../three.js-master/	examples/jsm/controls/OrbitControls.js';
+			let rollOverMesh, rollOverMaterial;
+			let cubeGeo, cubeMaterial;
 
-			let camera, scene, renderer, gui;
-			let model, central_cube;
-			let group;
-			let spotLight, lightHelper, shadowCameraHelper;
+			const objects = [];
+
+			init();
+			render();
 
 			function init() {
 
-				let multiplier = 1;
-				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
-				camera.position.set( 0, 1500 * multiplier, 500 * multiplier );
-				camera.rotation.x = -25 * Math.PI / 180;
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set( 500, 800, 1300 );
+				camera.lookAt( 0, 0, 0 );
 
 				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xf0f0f0 );
 
-				// RENDER
+				// roll-over helpers
+
+				const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
+				rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
+				rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
+				scene.add( rollOverMesh );
+
+				// cubes
+
+				cubeGeo = new THREE.BoxGeometry( 50, 50, 50 );
+				cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xfeb74c, map: new THREE.TextureLoader().load( 'textures/square-outline-textured.png' ) } );
+
+				// grid
+
+				const gridHelper = new THREE.GridHelper( 1000, 20 );
+				scene.add( gridHelper );
+
+				//
+
+				raycaster = new THREE.Raycaster();
+				pointer = new THREE.Vector2();
+
+				const geometry = new THREE.PlaneGeometry( 1000, 1000 );
+				geometry.rotateX( - Math.PI / 2 );
+
+				plane = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { visible: false } ) );
+				scene.add( plane );
+
+				objects.push( plane );
+
+				// lights
+
+				const ambientLight = new THREE.AmbientLight( 0x606060 );
+				scene.add( ambientLight );
+
+				const directionalLight = new THREE.DirectionalLight( 0xffffff );
+				directionalLight.position.set( 1, 0.75, 0.5 ).normalize();
+				scene.add( directionalLight );
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				document.body.appendChild( renderer.domElement );
-				scene.background = new THREE.Color( 0x77b5fe );
 
-				renderer.shadowMap.enabled = true;
-
-				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-				renderer.outputEncoding = THREE.sRGBEncoding;
-				renderer.shadowMap.enabled = true;
-
-				// CONTROL
-
-				const controls = new OrbitControls( camera, renderer.domElement );
-				controls.addEventListener( 'change', renderer );
-				controls.minDistance = 1000;
-				controls.maxDistance = 2000;
-				controls.enablePan = false;
-
-				// LIGHTS
-
-				const light = new THREE.PointLight( 0xffffff, 10, 100000 );
-				light.position.set( 50, 1000, 1000 );
-
-				light.castShadow = true;
-
-		    scene.add( light );
-
-
-				/*
-				spotLight = new THREE.SpotLight( 0xffffff, 1 );
-				spotLight.position.set( 1000, 1000, 1000 );
-				spotLight.angle = Math.PI / 4;
-				spotLight.penumbra = 0.1;
-				spotLight.decay = 2;
-				spotLight.distance = 3000;
-
-				spotLight.castShadow = true;
-
-				scene.add( spotLight );
-				*/
-				// GROUND
-
-				const floorMat = new THREE.MeshPhongMaterial( { color: 0x333333 } );
-				const floorGeometry = new THREE.PlaneGeometry( 20000, 20000 );
-
-				const floorMesh = new THREE.Mesh( floorGeometry, floorMat );
-				floorMesh.position.set( 0, -100, 0 );
-				floorMesh.rotation.x = - Math.PI * 0.5;
-				floorMesh.receiveShadow  = true;
-				scene.add( floorMesh );
-
-
-
-				const geometry = new THREE.BoxGeometry( 200, 200, 200 );
-				//Texture
-				const rockTexture = new THREE.TextureLoader().load('textures/roche.jpg');
-				//Material
-				const material = new THREE.MeshPhongMaterial( { map: rockTexture } );
-
-				model = new THREE.Mesh( geometry, material );
-				//Set position to mesh
-				//Add mesh in group
-				scene.add(model);
-				model.castShadow = true;
+				document.addEventListener( 'pointermove', onPointerMove );
+				document.addEventListener( 'pointerdown', onPointerDown );
+				document.addEventListener( 'keydown', onDocumentKeyDown );
+				document.addEventListener( 'keyup', onDocumentKeyUp );
 
 				//
 
 				window.addEventListener( 'resize', onWindowResize );
-
-			}
-
-			function buildGui() {
-
-				gui = new GUI();
-
-				const params = {
-					'light color': spotLight.color.getHex(),
-					intensity: spotLight.intensity,
-					distance: spotLight.distance,
-					angle: spotLight.angle,
-					penumbra: spotLight.penumbra,
-					decay: spotLight.decay,
-					focus: spotLight.shadow.focus
-				};
-
-				gui.addColor( params, 'light color' ).onChange( function ( val ) {
-
-					spotLight.color.setHex( val );
-					render();
-
-				} );
-
-				gui.add( params, 'intensity', 0, 20 ).onChange( function ( val ) {
-
-					spotLight.intensity = val;
-					render();
-
-				} );
-
-
-				gui.add( params, 'distance', 50, 3000 ).onChange( function ( val ) {
-
-					spotLight.distance = val;
-					render();
-
-				} );
-
-				gui.add( params, 'angle', 0, Math.PI / 3 ).onChange( function ( val ) {
-
-					spotLight.angle = val;
-					render();
-
-				} );
-
-				gui.add( params, 'penumbra', 0, 1 ).onChange( function ( val ) {
-
-					spotLight.penumbra = val;
-					render();
-
-				} );
-
-				gui.add( params, 'decay', 1, 2 ).onChange( function ( val ) {
-
-					spotLight.decay = val;
-					render();
-
-				} );
-
-				gui.add( params, 'focus', 0, 1 ).onChange( function ( val ) {
-
-					spotLight.shadow.focus = val;
-					render();
-
-				} );
-
-				gui.open();
 
 			}
 
@@ -180,25 +109,101 @@
 
 				renderer.setSize( window.innerWidth, window.innerHeight );
 
+				render();
+
 			}
 
-			function animate() {
+			function onPointerMove( event ) {
 
-				requestAnimationFrame( animate );
+				pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
 
-				scene.rotation.y += 0.001;
+				raycaster.setFromCamera( pointer, camera );
+
+				const intersects = raycaster.intersectObjects( objects, false );
+
+				console.log(raycaster);
+
+				if ( intersects.length > 0 ) {
+
+					const intersect = intersects[ 0 ];
+
+					rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
+					rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+
+				}
 
 				render();
 
 			}
 
-			function render(){
-				renderer.render( scene, camera );
+			function onPointerDown( event ) {
+
+				pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+
+				raycaster.setFromCamera( pointer, camera );
+
+				const intersects = raycaster.intersectObjects( objects, false );
+
+				if ( intersects.length > 0 ) {
+
+					const intersect = intersects[ 0 ];
+
+					// delete cube
+
+					if ( isShiftDown ) {
+
+						if ( intersect.object !== plane ) {
+
+							scene.remove( intersect.object );
+
+							objects.splice( objects.indexOf( intersect.object ), 1 );
+
+						}
+
+						// create cube
+
+					} else {
+
+						const voxel = new THREE.Mesh( cubeGeo, cubeMaterial );
+						voxel.position.copy( intersect.point ).add( intersect.face.normal );
+						voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+						scene.add( voxel );
+
+						objects.push( voxel );
+
+					}
+
+					render();
+
+				}
+
 			}
 
-			init();
-			animate();
-			//buildGui();
+			function onDocumentKeyDown( event ) {
+
+				switch ( event.keyCode ) {
+
+					case 16: isShiftDown = true; break;
+
+				}
+
+			}
+
+			function onDocumentKeyUp( event ) {
+
+				switch ( event.keyCode ) {
+
+					case 16: isShiftDown = false; break;
+
+				}
+
+			}
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
 
 		</script>
 
